@@ -12,6 +12,11 @@ import SecurityScan from './pages/SecurityScan';
 import Performance from './pages/Performance';
 import TestGeneration from './pages/TestGeneration';
 import Refactoring from './pages/Refactoring';
+import GitHubIntegration from './pages/GitHubIntegration';
+import Teams from './pages/Teams';
+import MyAssignments from './pages/MyAssignments';
+import Webhooks from './pages/Webhooks';
+import Analytics from './pages/Analytics';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -129,6 +134,11 @@ function App() {
           <Route path="/performance" element={<Performance />} />
           <Route path="/test-generation" element={<TestGeneration />} />
           <Route path="/refactoring" element={<Refactoring />} />
+          <Route path="/github" element={<GitHubIntegration />} />
+          <Route path="/teams" element={<Teams />} />
+          <Route path="/assignments" element={<MyAssignments />} />
+          <Route path="/webhooks" element={<Webhooks />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

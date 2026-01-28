@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
+import { initDatabase } from './config/database.js';
 import codeReviewsRouter from './routes/codeReviews.js';
 import documentationRouter from './routes/documentation.js';
 import codeAnalysisRouter from './routes/codeAnalysis.js';
@@ -17,6 +18,12 @@ import securityScanRouter from './routes/securityScan.js';
 import performanceRouter from './routes/performance.js';
 import testGenerationRouter from './routes/testGeneration.js';
 import refactoringRouter from './routes/refactoring.js';
+import githubIntegrationsRouter from './routes/githubIntegrations.js';
+import pullRequestsRouter from './routes/pullRequests.js';
+import teamsRouter from './routes/teams.js';
+import assignmentsRouter from './routes/assignments.js';
+import webhooksRouter from './routes/webhooks.js';
+import metricsRouter from './routes/metrics.js';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -44,6 +51,12 @@ app.use('/api/security-scan', securityScanRouter);
 app.use('/api/performance', performanceRouter);
 app.use('/api/test-generation', testGenerationRouter);
 app.use('/api/refactoring', refactoringRouter);
+app.use('/api/github', githubIntegrationsRouter);
+app.use('/api/pull-requests', pullRequestsRouter);
+app.use('/api/teams', teamsRouter);
+app.use('/api/assignments', assignmentsRouter);
+app.use('/api/webhooks', webhooksRouter);
+app.use('/api/metrics', metricsRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -56,7 +69,15 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
-});
+// Initialize database and start server
+initDatabase()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`Health check: http://localhost:${PORT}/api/health`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to initialize database:', err);
+    process.exit(1);
+  });

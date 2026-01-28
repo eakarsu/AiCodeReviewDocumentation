@@ -183,6 +183,161 @@ export const initDatabase = async () => {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+
+    -- Review Issues table (for severity scoring)
+    CREATE TABLE IF NOT EXISTS review_issues (
+      id SERIAL PRIMARY KEY,
+      review_id INTEGER REFERENCES code_reviews(id) ON DELETE CASCADE,
+      category VARCHAR(50),
+      severity VARCHAR(20),
+      severity_score INTEGER,
+      title VARCHAR(255),
+      description TEXT,
+      line_number INTEGER,
+      suggestion TEXT,
+      fixed BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- GitHub Integrations table
+    CREATE TABLE IF NOT EXISTS github_integrations (
+      id SERIAL PRIMARY KEY,
+      access_token TEXT NOT NULL,
+      username VARCHAR(255),
+      avatar_url VARCHAR(500),
+      status VARCHAR(20) DEFAULT 'active',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Pull Requests table
+    CREATE TABLE IF NOT EXISTS pull_requests (
+      id SERIAL PRIMARY KEY,
+      integration_id INTEGER REFERENCES github_integrations(id) ON DELETE SET NULL,
+      pr_number INTEGER,
+      title VARCHAR(500),
+      author VARCHAR(255),
+      repository VARCHAR(500),
+      base_branch VARCHAR(255),
+      head_branch VARCHAR(255),
+      diff_content TEXT,
+      files_changed JSONB,
+      pr_url VARCHAR(500),
+      state VARCHAR(20),
+      review_id INTEGER REFERENCES code_reviews(id) ON DELETE SET NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Teams table
+    CREATE TABLE IF NOT EXISTS teams (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Team Members table
+    CREATE TABLE IF NOT EXISTS team_members (
+      id SERIAL PRIMARY KEY,
+      team_id INTEGER REFERENCES teams(id) ON DELETE CASCADE,
+      email VARCHAR(255) NOT NULL,
+      name VARCHAR(255),
+      role VARCHAR(50) DEFAULT 'member',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(team_id, email)
+    );
+
+    -- Review Assignments table
+    CREATE TABLE IF NOT EXISTS review_assignments (
+      id SERIAL PRIMARY KEY,
+      review_id INTEGER REFERENCES code_reviews(id) ON DELETE CASCADE,
+      assigned_to VARCHAR(255) NOT NULL,
+      assigned_by VARCHAR(255),
+      priority VARCHAR(20) DEFAULT 'medium',
+      status VARCHAR(20) DEFAULT 'pending',
+      due_date TIMESTAMP,
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Webhooks table
+    CREATE TABLE IF NOT EXISTS webhooks (
+      id SERIAL PRIMARY KEY,
+      integration_id INTEGER REFERENCES github_integrations(id) ON DELETE CASCADE,
+      secret_token VARCHAR(255) NOT NULL,
+      events JSONB DEFAULT '["push", "pull_request"]',
+      auto_review BOOLEAN DEFAULT TRUE,
+      status VARCHAR(20) DEFAULT 'active',
+      last_triggered_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Webhook Events table
+    CREATE TABLE IF NOT EXISTS webhook_events (
+      id SERIAL PRIMARY KEY,
+      webhook_id INTEGER REFERENCES webhooks(id) ON DELETE CASCADE,
+      event_type VARCHAR(50),
+      payload JSONB,
+      status VARCHAR(20),
+      review_id INTEGER REFERENCES code_reviews(id) ON DELETE SET NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Review Metrics table (for analytics)
+    CREATE TABLE IF NOT EXISTS review_metrics (
+      id SERIAL PRIMARY KEY,
+      date DATE NOT NULL UNIQUE,
+      total_reviews INTEGER DEFAULT 0,
+      completed_reviews INTEGER DEFAULT 0,
+      avg_severity_score DECIMAL(5,2),
+      issues_by_category JSONB,
+      top_languages JSONB,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Add severity columns to code_reviews if not exists
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='code_reviews' AND column_name='severity_score') THEN
+        ALTER TABLE code_reviews ADD COLUMN severity_score INTEGER;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='code_reviews' AND column_name='issues_count') THEN
+        ALTER TABLE code_reviews ADD COLUMN issues_count INTEGER DEFAULT 0;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='code_reviews' AND column_name='issues_data') THEN
+        ALTER TABLE code_reviews ADD COLUMN issues_data JSONB;
+      END IF;
+      -- Add updated_at to tables that might be missing it
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='review_assignments' AND column_name='updated_at') THEN
+        ALTER TABLE review_assignments ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='review_issues' AND column_name='updated_at') THEN
+        ALTER TABLE review_issues ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='teams' AND column_name='updated_at') THEN
+        ALTER TABLE teams ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='team_members' AND column_name='updated_at') THEN
+        ALTER TABLE team_members ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='webhooks' AND column_name='updated_at') THEN
+        ALTER TABLE webhooks ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='webhook_events' AND column_name='updated_at') THEN
+        ALTER TABLE webhook_events ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='review_metrics' AND column_name='updated_at') THEN
+        ALTER TABLE review_metrics ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      END IF;
+    END $$;
   `;
 
   try {

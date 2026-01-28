@@ -73,6 +73,41 @@ export const aiCodeReview = async (code, language) => {
   return callOpenRouter(prompt, systemPrompt);
 };
 
+// Structured code review with JSON output for severity scoring
+export const aiCodeReviewStructured = async (code, language) => {
+  const systemPrompt = `You are an expert code reviewer. Analyze code for bugs, security issues, performance problems, and best practices. Always respond with valid JSON.`;
+
+  const prompt = `Review the following ${language} code and provide a structured analysis.
+
+\`\`\`${language}
+${code}
+\`\`\`
+
+Respond with ONLY valid JSON in this exact format:
+\`\`\`json
+{
+  "summary": "Brief summary of the code",
+  "overallRating": 7,
+  "issues": [
+    {
+      "category": "security|performance|bug|style|maintainability",
+      "severity": "critical|high|medium|low|info",
+      "title": "Brief issue title",
+      "description": "Detailed description of the issue",
+      "line_number": null,
+      "suggestion": "How to fix this issue"
+    }
+  ],
+  "positives": ["List of good things about the code"],
+  "recommendations": ["Overall recommendations"]
+}
+\`\`\`
+
+Be thorough but focused. Include line numbers when identifiable.`;
+
+  return callOpenRouter(prompt, systemPrompt);
+};
+
 export const aiGenerateDocumentation = async (code, language) => {
   const systemPrompt = 'You are a technical documentation expert. Generate clear, comprehensive documentation.';
   const prompt = `Generate documentation for the following ${language} code:\n\n\`\`\`${language}\n${code}\n\`\`\`\n\nInclude:\n1. Overview\n2. Function/Class descriptions\n3. Parameters and return values\n4. Usage examples\n5. Any important notes`;
@@ -139,6 +174,7 @@ export const aiRefactoringSuggestions = async (code, language) => {
 export default {
   callOpenRouter,
   aiCodeReview,
+  aiCodeReviewStructured,
   aiGenerateDocumentation,
   aiCodeAnalysis,
   aiGenerateApiDocs,

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import DataTable from '../components/DataTable';
 import DetailModal from '../components/DetailModal';
 import NewItemForm from '../components/NewItemForm';
+import DiffViewer from '../components/DiffViewer';
 import { refactoringApi } from '../services/api';
 
 const columns = [
@@ -106,13 +107,19 @@ function Refactoring() {
               <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Language</h4><span className="badge badge-info">{selectedItem.language}</span></div>
               <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Improvement Type</h4><span className="badge badge-gray">{selectedItem.improvement_type}</span></div>
             </div>
-            <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Original Code</h4><pre className="text-sm overflow-x-auto">{selectedItem.original_code}</pre></div>
-            {selectedItem.refactored_code && (
-              <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Refactored Code</h4>
-                <div className="bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-lg p-4">
-                  <pre className="whitespace-pre-wrap text-sm text-cyan-800 dark:text-cyan-200">{selectedItem.refactored_code}</pre>
-                </div>
+            {selectedItem.refactored_code ? (
+              <div>
+                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Code Comparison</h4>
+                <DiffViewer
+                  oldCode={selectedItem.original_code}
+                  newCode={selectedItem.refactored_code}
+                  oldTitle="Original"
+                  newTitle="Refactored"
+                  language={selectedItem.language}
+                />
               </div>
+            ) : (
+              <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Original Code</h4><pre className="text-sm overflow-x-auto">{selectedItem.original_code}</pre></div>
             )}
             {selectedItem.rationale && (
               <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Rationale</h4>

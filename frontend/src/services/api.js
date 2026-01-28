@@ -56,6 +56,10 @@ export const codeReviewsApi = {
   update: (id, data) => api.put(`/code-reviews/${id}`, data),
   delete: (id) => api.delete(`/code-reviews/${id}`),
   analyze: (id) => api.post(`/code-reviews/${id}/analyze`),
+  analyzeStructured: (id) => api.post(`/code-reviews/${id}/analyze-structured`),
+  getIssues: (id) => api.get(`/code-reviews/${id}/issues`),
+  updateIssue: (reviewId, issueId, data) => api.request(`/code-reviews/${reviewId}/issues/${issueId}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  getSeverityStats: () => api.get('/code-reviews/stats/severity'),
 };
 
 export const documentationApi = {
@@ -137,4 +141,60 @@ export const refactoringApi = {
   update: (id, data) => api.put(`/refactoring/${id}`, data),
   delete: (id) => api.delete(`/refactoring/${id}`),
   suggest: (id) => api.post(`/refactoring/${id}/suggest`),
+};
+
+// GitHub Integration API
+export const githubApi = {
+  connect: (token) => api.post('/github/connect', { access_token: token }),
+  getStatus: () => api.get('/github/status'),
+  disconnect: () => api.delete('/github/disconnect'),
+  getRepos: (params) => api.get('/github/repos'),
+  getRepoPulls: (owner, repo, state = 'open') => api.get(`/github/repos/${owner}/${repo}/pulls?state=${state}`),
+};
+
+// Pull Requests API
+export const pullRequestsApi = {
+  getAll: () => api.get('/pull-requests'),
+  getById: (id) => api.get(`/pull-requests/${id}`),
+  fetch: (data) => api.post('/pull-requests/fetch', data),
+  createReview: (id, data) => api.post(`/pull-requests/${id}/review`, data),
+  refresh: (id) => api.post(`/pull-requests/${id}/refresh`),
+  delete: (id) => api.delete(`/pull-requests/${id}`),
+};
+
+// Teams API
+export const teamsApi = {
+  getAll: () => api.get('/teams'),
+  getById: (id) => api.get(`/teams/${id}`),
+  create: (data) => api.post('/teams', data),
+  update: (id, data) => api.put(`/teams/${id}`, data),
+  delete: (id) => api.delete(`/teams/${id}`),
+  addMember: (teamId, data) => api.post(`/teams/${teamId}/members`, data),
+  removeMember: (teamId, memberId) => api.delete(`/teams/${teamId}/members/${memberId}`),
+};
+
+// Assignments API
+export const assignmentsApi = {
+  getAll: () => api.get('/assignments'),
+  getMyAssignments: () => api.get('/assignments/my'),
+  create: (data) => api.post('/assignments', data),
+  update: (id, data) => api.put(`/assignments/${id}`, data),
+  delete: (id) => api.delete(`/assignments/${id}`),
+};
+
+// Webhooks API
+export const webhooksApi = {
+  getAll: () => api.get('/webhooks'),
+  getById: (id) => api.get(`/webhooks/${id}`),
+  create: (data) => api.post('/webhooks', data),
+  update: (id, data) => api.put(`/webhooks/${id}`, data),
+  delete: (id) => api.delete(`/webhooks/${id}`),
+  getEvents: (id) => api.get(`/webhooks/${id}/events`),
+};
+
+// Metrics API
+export const metricsApi = {
+  getDashboard: () => api.get('/metrics/dashboard'),
+  getTrends: (params) => api.get('/metrics/trends'),
+  getCategories: () => api.get('/metrics/categories'),
 };

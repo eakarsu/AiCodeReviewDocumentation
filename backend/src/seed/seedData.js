@@ -8,28 +8,28 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 const seedCodeReviews = async () => {
   const items = [
-    { title: 'User Authentication Module', description: 'Review login/logout functionality', code_snippet: 'async function login(email, password) {\n  const user = await User.findOne({ email });\n  if (!user) throw new Error("User not found");\n  const valid = await bcrypt.compare(password, user.password);\n  return valid ? generateToken(user) : null;\n}', language: 'javascript', status: 'completed', review_result: 'Good implementation with proper async/await. Consider adding rate limiting.' },
+    { title: 'User Authentication Module', description: 'Review login/logout functionality', code_snippet: 'async function login(email, password) {\n  const user = await User.findOne({ email });\n  if (!user) throw new Error("User not found");\n  const valid = await bcrypt.compare(password, user.password);\n  return valid ? generateToken(user) : null;\n}', language: 'javascript', status: 'completed', review_result: 'Good implementation with proper async/await. Consider adding rate limiting.', severity_score: 6, issues_count: 2 },
     { title: 'Shopping Cart Logic', description: 'E-commerce cart operations review', code_snippet: 'class Cart {\n  addItem(product, qty) {\n    const existing = this.items.find(i => i.id === product.id);\n    if (existing) existing.qty += qty;\n    else this.items.push({ ...product, qty });\n  }\n}', language: 'javascript', status: 'pending' },
-    { title: 'Database Query Optimization', description: 'Review SQL queries for performance', code_snippet: 'SELECT u.*, o.* FROM users u\nLEFT JOIN orders o ON u.id = o.user_id\nWHERE u.created_at > NOW() - INTERVAL 30 DAY;', language: 'sql', status: 'completed', review_result: 'Consider adding indexes on created_at and user_id columns.' },
+    { title: 'Database Query Optimization', description: 'Review SQL queries for performance', code_snippet: 'SELECT u.*, o.* FROM users u\nLEFT JOIN orders o ON u.id = o.user_id\nWHERE u.created_at > NOW() - INTERVAL 30 DAY;', language: 'sql', status: 'completed', review_result: 'Consider adding indexes on created_at and user_id columns.', severity_score: 8, issues_count: 2 },
     { title: 'React Form Validation', description: 'Form handling and validation review', code_snippet: 'const handleSubmit = (e) => {\n  e.preventDefault();\n  if (!email.includes("@")) {\n    setError("Invalid email");\n    return;\n  }\n  submitForm({ email, password });\n};', language: 'javascript', status: 'pending' },
-    { title: 'File Upload Handler', description: 'Secure file upload implementation', code_snippet: 'app.post("/upload", multer({ dest: "uploads/" }).single("file"), (req, res) => {\n  if (!req.file) return res.status(400).send("No file");\n  res.json({ filename: req.file.filename });\n});', language: 'javascript', status: 'completed', review_result: 'Add file type validation and size limits for security.' },
+    { title: 'File Upload Handler', description: 'Secure file upload implementation', code_snippet: 'app.post("/upload", multer({ dest: "uploads/" }).single("file"), (req, res) => {\n  if (!req.file) return res.status(400).send("No file");\n  res.json({ filename: req.file.filename });\n});', language: 'javascript', status: 'completed', review_result: 'Add file type validation and size limits for security.', severity_score: 7, issues_count: 2 },
     { title: 'WebSocket Connection Manager', description: 'Real-time communication handler', code_snippet: 'io.on("connection", (socket) => {\n  console.log("Client connected");\n  socket.on("message", (data) => {\n    io.emit("broadcast", data);\n  });\n});', language: 'javascript', status: 'pending' },
-    { title: 'Password Hashing Utility', description: 'Cryptographic password handling', code_snippet: 'const hashPassword = async (password) => {\n  const salt = await bcrypt.genSalt(10);\n  return bcrypt.hash(password, salt);\n};', language: 'javascript', status: 'completed', review_result: 'Salt rounds of 10 is adequate. Consider making it configurable.' },
+    { title: 'Password Hashing Utility', description: 'Cryptographic password handling', code_snippet: 'const hashPassword = async (password) => {\n  const salt = await bcrypt.genSalt(10);\n  return bcrypt.hash(password, salt);\n};', language: 'javascript', status: 'completed', review_result: 'Salt rounds of 10 is adequate. Consider making it configurable.', severity_score: 5, issues_count: 1 },
     { title: 'API Rate Limiter', description: 'Request throttling middleware', code_snippet: 'const rateLimiter = rateLimit({\n  windowMs: 15 * 60 * 1000,\n  max: 100,\n  message: "Too many requests"\n});', language: 'javascript', status: 'pending' },
-    { title: 'Data Pagination Helper', description: 'List pagination implementation', code_snippet: 'function paginate(array, page, limit) {\n  const start = (page - 1) * limit;\n  return {\n    data: array.slice(start, start + limit),\n    total: array.length,\n    pages: Math.ceil(array.length / limit)\n  };\n}', language: 'javascript', status: 'completed', review_result: 'Clean implementation. Consider adding input validation.' },
+    { title: 'Data Pagination Helper', description: 'List pagination implementation', code_snippet: 'function paginate(array, page, limit) {\n  const start = (page - 1) * limit;\n  return {\n    data: array.slice(start, start + limit),\n    total: array.length,\n    pages: Math.ceil(array.length / limit)\n  };\n}', language: 'javascript', status: 'completed', review_result: 'Clean implementation. Consider adding input validation.', severity_score: 7, issues_count: 2 },
     { title: 'JWT Token Generator', description: 'Token creation and validation', code_snippet: 'const generateToken = (user) => {\n  return jwt.sign(\n    { id: user.id, email: user.email },\n    process.env.JWT_SECRET,\n    { expiresIn: "24h" }\n  );\n};', language: 'javascript', status: 'pending' },
-    { title: 'Error Boundary Component', description: 'React error handling', code_snippet: 'class ErrorBoundary extends Component {\n  state = { hasError: false };\n  static getDerivedStateFromError() {\n    return { hasError: true };\n  }\n  render() {\n    return this.state.hasError ? <Fallback /> : this.props.children;\n  }\n}', language: 'javascript', status: 'completed', review_result: 'Good error boundary. Add error logging service integration.' },
+    { title: 'Error Boundary Component', description: 'React error handling', code_snippet: 'class ErrorBoundary extends Component {\n  state = { hasError: false };\n  static getDerivedStateFromError() {\n    return { hasError: true };\n  }\n  render() {\n    return this.state.hasError ? <Fallback /> : this.props.children;\n  }\n}', language: 'javascript', status: 'completed', review_result: 'Good error boundary. Add error logging service integration.', severity_score: 3, issues_count: 2 },
     { title: 'Caching Layer Implementation', description: 'Redis caching strategy', code_snippet: 'const getFromCache = async (key) => {\n  const cached = await redis.get(key);\n  if (cached) return JSON.parse(cached);\n  const data = await fetchFromDB(key);\n  await redis.setex(key, 3600, JSON.stringify(data));\n  return data;\n};', language: 'javascript', status: 'pending' },
-    { title: 'Input Sanitization Middleware', description: 'XSS prevention utility', code_snippet: 'const sanitize = (req, res, next) => {\n  for (let key in req.body) {\n    if (typeof req.body[key] === "string") {\n      req.body[key] = xss(req.body[key].trim());\n    }\n  }\n  next();\n};', language: 'javascript', status: 'completed', review_result: 'Good XSS prevention. Consider recursive sanitization for nested objects.' },
+    { title: 'Input Sanitization Middleware', description: 'XSS prevention utility', code_snippet: 'const sanitize = (req, res, next) => {\n  for (let key in req.body) {\n    if (typeof req.body[key] === "string") {\n      req.body[key] = xss(req.body[key].trim());\n    }\n  }\n  next();\n};', language: 'javascript', status: 'completed', review_result: 'Good XSS prevention. Consider recursive sanitization for nested objects.', severity_score: 6, issues_count: 2 },
     { title: 'Database Connection Pool', description: 'Connection management setup', code_snippet: 'const pool = new Pool({\n  host: process.env.DB_HOST,\n  max: 20,\n  idleTimeoutMillis: 30000,\n  connectionTimeoutMillis: 2000\n});', language: 'javascript', status: 'pending' },
     { title: 'Event Emitter Service', description: 'Custom event handling system', code_snippet: 'class EventBus {\n  constructor() {\n    this.events = {};\n  }\n  on(event, callback) {\n    if (!this.events[event]) this.events[event] = [];\n    this.events[event].push(callback);\n  }\n  emit(event, data) {\n    this.events[event]?.forEach(cb => cb(data));\n  }\n}', language: 'javascript', status: 'completed', review_result: 'Clean implementation. Consider adding once() and off() methods.' }
   ];
 
   for (const item of items) {
     await query(
-      `INSERT INTO code_reviews (title, description, code_snippet, language, status, review_result)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [item.title, item.description, item.code_snippet, item.language, item.status, item.review_result || null]
+      `INSERT INTO code_reviews (title, description, code_snippet, language, status, review_result, severity_score, issues_count)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [item.title, item.description, item.code_snippet, item.language, item.status, item.review_result || null, item.severity_score || null, item.issues_count || null]
     );
   }
   console.log('Seeded code_reviews');
@@ -267,6 +267,163 @@ const seedTestGenerations = async () => {
   console.log('Seeded test_generations');
 };
 
+// Seed Teams
+const seedTeams = async () => {
+  const items = [
+    { name: 'Frontend Team', description: 'React, Vue, and Angular specialists' },
+    { name: 'Backend Team', description: 'Node.js, Python, and Go developers' },
+    { name: 'Security Team', description: 'Security auditing and vulnerability assessment' },
+    { name: 'DevOps Team', description: 'CI/CD, infrastructure, and deployment' },
+    { name: 'QA Team', description: 'Testing and quality assurance' }
+  ];
+
+  for (const item of items) {
+    await query(
+      `INSERT INTO teams (name, description) VALUES ($1, $2)`,
+      [item.name, item.description]
+    );
+  }
+  console.log('Seeded teams');
+};
+
+// Seed Team Members
+const seedTeamMembers = async () => {
+  const items = [
+    // Frontend Team (id: 1)
+    { team_id: 1, email: 'alice@example.com', name: 'Alice Johnson', role: 'lead' },
+    { team_id: 1, email: 'bob@example.com', name: 'Bob Smith', role: 'member' },
+    { team_id: 1, email: 'carol@example.com', name: 'Carol Williams', role: 'member' },
+    // Backend Team (id: 2)
+    { team_id: 2, email: 'david@example.com', name: 'David Brown', role: 'lead' },
+    { team_id: 2, email: 'emma@example.com', name: 'Emma Davis', role: 'member' },
+    { team_id: 2, email: 'frank@example.com', name: 'Frank Miller', role: 'member' },
+    // Security Team (id: 3)
+    { team_id: 3, email: 'grace@example.com', name: 'Grace Wilson', role: 'lead' },
+    { team_id: 3, email: 'henry@example.com', name: 'Henry Taylor', role: 'member' },
+    // DevOps Team (id: 4)
+    { team_id: 4, email: 'ivy@example.com', name: 'Ivy Anderson', role: 'lead' },
+    { team_id: 4, email: 'jack@example.com', name: 'Jack Thomas', role: 'member' },
+    // QA Team (id: 5)
+    { team_id: 5, email: 'kate@example.com', name: 'Kate Martinez', role: 'lead' },
+    { team_id: 5, email: 'leo@example.com', name: 'Leo Garcia', role: 'member' }
+  ];
+
+  for (const item of items) {
+    await query(
+      `INSERT INTO team_members (team_id, email, name, role) VALUES ($1, $2, $3, $4)`,
+      [item.team_id, item.email, item.name, item.role]
+    );
+  }
+  console.log('Seeded team_members');
+};
+
+// Seed Review Assignments (at least 15)
+const seedReviewAssignments = async () => {
+  const items = [
+    { review_id: 1, assigned_to: 'alice@example.com', assigned_by: 'admin@example.com', priority: 'high', status: 'completed', due_date: '2025-01-20' },
+    { review_id: 2, assigned_to: 'bob@example.com', assigned_by: 'alice@example.com', priority: 'medium', status: 'in_progress', due_date: '2025-01-25' },
+    { review_id: 3, assigned_to: 'david@example.com', assigned_by: 'admin@example.com', priority: 'low', status: 'pending', due_date: '2025-01-30' },
+    { review_id: 4, assigned_to: 'emma@example.com', assigned_by: 'david@example.com', priority: 'high', status: 'pending', due_date: '2025-01-22' },
+    { review_id: 5, assigned_to: 'grace@example.com', assigned_by: 'admin@example.com', priority: 'critical', status: 'in_progress', due_date: '2025-01-18' },
+    { review_id: 6, assigned_to: 'henry@example.com', assigned_by: 'grace@example.com', priority: 'medium', status: 'completed', due_date: '2025-01-15' },
+    { review_id: 7, assigned_to: 'ivy@example.com', assigned_by: 'admin@example.com', priority: 'low', status: 'pending', due_date: '2025-02-01' },
+    { review_id: 8, assigned_to: 'jack@example.com', assigned_by: 'ivy@example.com', priority: 'medium', status: 'in_progress', due_date: '2025-01-28' },
+    { review_id: 9, assigned_to: 'kate@example.com', assigned_by: 'admin@example.com', priority: 'high', status: 'completed', due_date: '2025-01-12' },
+    { review_id: 10, assigned_to: 'leo@example.com', assigned_by: 'kate@example.com', priority: 'medium', status: 'pending', due_date: '2025-01-26' },
+    { review_id: 11, assigned_to: 'alice@example.com', assigned_by: 'admin@example.com', priority: 'critical', status: 'in_progress', due_date: '2025-01-19' },
+    { review_id: 12, assigned_to: 'carol@example.com', assigned_by: 'alice@example.com', priority: 'low', status: 'pending', due_date: '2025-02-05' },
+    { review_id: 13, assigned_to: 'frank@example.com', assigned_by: 'david@example.com', priority: 'high', status: 'completed', due_date: '2025-01-10' },
+    { review_id: 14, assigned_to: 'bob@example.com', assigned_by: 'admin@example.com', priority: 'medium', status: 'in_progress', due_date: '2025-01-24' },
+    { review_id: 15, assigned_to: 'emma@example.com', assigned_by: 'david@example.com', priority: 'high', status: 'pending', due_date: '2025-01-27' },
+    { review_id: 1, assigned_to: 'grace@example.com', assigned_by: 'admin@example.com', priority: 'critical', status: 'completed', due_date: '2025-01-08' },
+    { review_id: 2, assigned_to: 'henry@example.com', assigned_by: 'grace@example.com', priority: 'low', status: 'pending', due_date: '2025-02-10' },
+    { review_id: 3, assigned_to: 'kate@example.com', assigned_by: 'admin@example.com', priority: 'medium', status: 'in_progress', due_date: '2025-01-23' }
+  ];
+
+  for (const item of items) {
+    await query(
+      `INSERT INTO review_assignments (review_id, assigned_to, assigned_by, priority, status, due_date)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [item.review_id, item.assigned_to, item.assigned_by, item.priority, item.status, item.due_date]
+    );
+  }
+  console.log('Seeded review_assignments');
+};
+
+// Seed Review Issues
+const seedReviewIssues = async () => {
+  const items = [
+    // Issues for review 1
+    { review_id: 1, category: 'security', severity: 'high', severity_score: 8, title: 'Potential SQL injection', description: 'User input not sanitized before database query', line_number: 15, suggestion: 'Use parameterized queries', fixed: false },
+    { review_id: 1, category: 'performance', severity: 'medium', severity_score: 5, title: 'Inefficient loop', description: 'O(n²) complexity in nested loops', line_number: 28, suggestion: 'Use a Map for O(1) lookups', fixed: true },
+    // Issues for review 3
+    { review_id: 3, category: 'bug', severity: 'critical', severity_score: 10, title: 'Null pointer exception', description: 'Missing null check before accessing property', line_number: 42, suggestion: 'Add null check or use optional chaining', fixed: false },
+    { review_id: 3, category: 'style', severity: 'low', severity_score: 2, title: 'Inconsistent naming', description: 'Variable names use different conventions', line_number: 5, suggestion: 'Use camelCase consistently', fixed: true },
+    // Issues for review 5
+    { review_id: 5, category: 'security', severity: 'critical', severity_score: 9, title: 'Hardcoded credentials', description: 'API key stored in source code', line_number: 8, suggestion: 'Use environment variables', fixed: false },
+    { review_id: 5, category: 'maintainability', severity: 'medium', severity_score: 6, title: 'Long function', description: 'Function exceeds 50 lines', line_number: 100, suggestion: 'Extract helper functions', fixed: false },
+    // Issues for review 7
+    { review_id: 7, category: 'performance', severity: 'high', severity_score: 7, title: 'Memory leak', description: 'Event listener not removed on cleanup', line_number: 33, suggestion: 'Add cleanup in useEffect return', fixed: true },
+    // Issues for review 9
+    { review_id: 9, category: 'bug', severity: 'high', severity_score: 8, title: 'Race condition', description: 'Async operations not properly awaited', line_number: 67, suggestion: 'Use Promise.all for parallel operations', fixed: false },
+    { review_id: 9, category: 'security', severity: 'medium', severity_score: 5, title: 'Missing input validation', description: 'User input not validated before processing', line_number: 12, suggestion: 'Add Joi or Zod validation schema', fixed: true },
+    // Issues for review 11
+    { review_id: 11, category: 'maintainability', severity: 'low', severity_score: 3, title: 'Magic numbers', description: 'Numeric literals without explanation', line_number: 45, suggestion: 'Extract to named constants', fixed: false },
+    { review_id: 11, category: 'style', severity: 'info', severity_score: 1, title: 'Missing documentation', description: 'Complex function lacks JSDoc comments', line_number: 1, suggestion: 'Add JSDoc with parameter descriptions', fixed: false },
+    // Issues for review 13
+    { review_id: 13, category: 'performance', severity: 'high', severity_score: 7, title: 'N+1 query problem', description: 'Database queries in a loop', line_number: 89, suggestion: 'Use eager loading or batch queries', fixed: true },
+    { review_id: 13, category: 'bug', severity: 'medium', severity_score: 6, title: 'Incorrect error handling', description: 'Error silently swallowed', line_number: 95, suggestion: 'Log error and re-throw or handle appropriately', fixed: false }
+  ];
+
+  for (const item of items) {
+    await query(
+      `INSERT INTO review_issues (review_id, category, severity, severity_score, title, description, line_number, suggestion, fixed)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [item.review_id, item.category, item.severity, item.severity_score, item.title, item.description, item.line_number, item.suggestion, item.fixed]
+    );
+  }
+  console.log('Seeded review_issues');
+};
+
+// Seed Review Metrics (last 30 days)
+const seedReviewMetrics = async () => {
+  const today = new Date();
+  const items = [];
+
+  for (let i = 30; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+
+    items.push({
+      date: dateStr,
+      total_reviews: Math.floor(Math.random() * 5) + 1,
+      completed_reviews: Math.floor(Math.random() * 4),
+      avg_severity_score: (Math.random() * 5 + 3).toFixed(2),
+      issues_by_category: JSON.stringify({
+        security: Math.floor(Math.random() * 5),
+        performance: Math.floor(Math.random() * 8),
+        bug: Math.floor(Math.random() * 6),
+        style: Math.floor(Math.random() * 10),
+        maintainability: Math.floor(Math.random() * 7)
+      }),
+      top_languages: JSON.stringify(['javascript', 'typescript', 'python'].slice(0, Math.floor(Math.random() * 3) + 1))
+    });
+  }
+
+  for (const item of items) {
+    await query(
+      `INSERT INTO review_metrics (date, total_reviews, completed_reviews, avg_severity_score, issues_by_category, top_languages)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (date) DO UPDATE SET
+         total_reviews = EXCLUDED.total_reviews,
+         completed_reviews = EXCLUDED.completed_reviews`,
+      [item.date, item.total_reviews, item.completed_reviews, item.avg_severity_score, item.issues_by_category, item.top_languages]
+    );
+  }
+  console.log('Seeded review_metrics');
+};
+
 const seedRefactoringSuggestions = async () => {
   const items = [
     { title: 'Callback Hell Refactoring', description: 'Convert callbacks to async/await', original_code: 'function getData(callback) {\n  fetchUser((err, user) => {\n    if (err) return callback(err);\n    fetchOrders(user.id, (err, orders) => {\n      if (err) return callback(err);\n      fetchPayments(orders[0].id, (err, payments) => {\n        callback(null, { user, orders, payments });\n      });\n    });\n  });\n}', language: 'javascript', improvement_type: 'Async/Await', status: 'completed', refactored_code: 'async function getData() {\n  const user = await fetchUser();\n  const orders = await fetchOrders(user.id);\n  const payments = await fetchPayments(orders[0].id);\n  return { user, orders, payments };\n}', rationale: 'Async/await provides cleaner, more readable asynchronous code.' },
@@ -303,15 +460,22 @@ const runSeed = async () => {
     // Initialize database tables
     await initDatabase();
 
-    // Clear existing data
+    // Clear existing data (order matters due to foreign keys)
     const tables = [
+      'review_assignments', 'team_members', 'teams',
+      'review_issues', 'review_metrics',
+      'webhook_events', 'webhooks', 'pull_requests', 'github_integrations',
       'code_reviews', 'documentation', 'code_analysis', 'api_docs',
       'readme_projects', 'code_comments', 'security_scans',
       'performance_reports', 'test_generations', 'refactoring_suggestions'
     ];
 
     for (const table of tables) {
-      await query(`TRUNCATE TABLE ${table} RESTART IDENTITY CASCADE`);
+      try {
+        await query(`TRUNCATE TABLE ${table} RESTART IDENTITY CASCADE`);
+      } catch (e) {
+        // Table might not exist yet, that's ok
+      }
     }
     console.log('Cleared existing data');
 
@@ -326,6 +490,13 @@ const runSeed = async () => {
     await seedPerformanceReports();
     await seedTestGenerations();
     await seedRefactoringSuggestions();
+
+    // Seed new feature tables
+    await seedTeams();
+    await seedTeamMembers();
+    await seedReviewAssignments();
+    await seedReviewIssues();
+    await seedReviewMetrics();
 
     console.log('Database seeding completed successfully!');
     process.exit(0);

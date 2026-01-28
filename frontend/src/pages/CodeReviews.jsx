@@ -3,11 +3,30 @@ import { Link } from 'react-router-dom';
 import DataTable from '../components/DataTable';
 import DetailModal from '../components/DetailModal';
 import NewItemForm from '../components/NewItemForm';
+import { SeverityScore, SeveritySummary } from '../components/SeverityBadge';
+import IssuesList from '../components/IssuesList';
 import { codeReviewsApi } from '../services/api';
 
 const columns = [
   { key: 'title', label: 'Title' },
   { key: 'language', label: 'Language', render: (val) => <span className="badge badge-info">{val || 'N/A'}</span> },
+  {
+    key: 'severity_score',
+    label: 'Severity',
+    render: (val, row) => val ? (
+      <div className="flex items-center gap-2">
+        <span className={`font-bold ${
+          val >= 8 ? 'text-red-600 dark:text-red-400' :
+          val >= 6 ? 'text-orange-600 dark:text-orange-400' :
+          val >= 4 ? 'text-yellow-600 dark:text-yellow-400' :
+          'text-green-600 dark:text-green-400'
+        }`}>{val}</span>
+        {row.issues_count > 0 && (
+          <span className="text-xs text-gray-500">({row.issues_count} issues)</span>
+        )}
+      </div>
+    ) : <span className="text-gray-400">-</span>
+  },
   {
     key: 'status',
     label: 'Status',
@@ -53,6 +72,8 @@ function CodeReviews() {
   const [showNewForm, setShowNewForm] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [issues, setIssues] = useState([]);
+  const [showIssues, setShowIssues] = useState(false);
 
   const fetchItems = async () => {
     try {
@@ -65,9 +86,37 @@ function CodeReviews() {
     }
   };
 
+  const fetchIssues = async (reviewId) => {
+    try {
+      const data = await codeReviewsApi.getIssues(reviewId);
+      setIssues(data);
+    } catch (err) {
+      console.error('Error fetching issues:', err);
+      // Try to parse from issues_data if API fails
+      if (selectedItem?.issues_data) {
+        try {
+          const parsed = typeof selectedItem.issues_data === 'string'
+            ? JSON.parse(selectedItem.issues_data)
+            : selectedItem.issues_data;
+          setIssues(parsed);
+        } catch {
+          setIssues([]);
+        }
+      }
+    }
+  };
+
   useEffect(() => {
     fetchItems();
   }, []);
+
+  useEffect(() => {
+    if (selectedItem?.id && selectedItem.status === 'completed') {
+      fetchIssues(selectedItem.id);
+    } else {
+      setIssues([]);
+    }
+  }, [selectedItem?.id]);
 
   const handleCreate = async (data) => {
     setFormLoading(true);
@@ -93,16 +142,32 @@ function CodeReviews() {
     }
   };
 
-  const handleAnalyze = async (id) => {
+  const handleAnalyze = async (id, structured = true) => {
     setAiLoading(true);
     try {
-      const updated = await codeReviewsApi.analyze(id);
+      const updated = structured
+        ? await codeReviewsApi.analyzeStructured(id)
+        : await codeReviewsApi.analyze(id);
       setSelectedItem(updated);
+      if (updated.parsed_issues) {
+        setIssues(updated.parsed_issues);
+      } else {
+        fetchIssues(id);
+      }
       fetchItems();
     } catch (err) {
       alert('Error analyzing: ' + err.message);
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const handleToggleFixed = async (issueId, fixed) => {
+    try {
+      await codeReviewsApi.updateIssue(selectedItem.id, issueId, { fixed });
+      fetchIssues(selectedItem.id);
+    } catch (err) {
+      console.error('Error updating issue:', err);
     }
   };
 
@@ -135,7 +200,7 @@ function CodeReviews() {
       {/* Detail Modal */}
       <DetailModal
         isOpen={!!selectedItem}
-        onClose={() => setSelectedItem(null)}
+        onClose={() => { setSelectedItem(null); setShowIssues(false); }}
         title={selectedItem?.title}
         actions={
           <>
@@ -169,6 +234,26 @@ function CodeReviews() {
       >
         {selectedItem && (
           <div className="space-y-6">
+            {/* Severity Score Summary */}
+            {selectedItem.severity_score && (
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Severity Score</h4>
+                    <SeverityScore score={selectedItem.severity_score} />
+                  </div>
+                  <div className="text-right">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{selectedItem.issues_count || 0} issues found</span>
+                    {issues.length > 0 && (
+                      <div className="mt-2">
+                        <SeveritySummary issues={issues} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div>
               <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Description</h4>
               <p className="text-gray-900 dark:text-white">{selectedItem.description || 'No description'}</p>
@@ -184,7 +269,27 @@ function CodeReviews() {
               <pre className="text-sm overflow-x-auto">{selectedItem.code_snippet}</pre>
             </div>
 
-            {selectedItem.review_result && (
+            {/* Issues Tab */}
+            {issues.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Issues ({issues.length})
+                  </h4>
+                  <button
+                    onClick={() => setShowIssues(!showIssues)}
+                    className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400"
+                  >
+                    {showIssues ? 'Hide Issues' : 'Show Issues'}
+                  </button>
+                </div>
+                {showIssues && (
+                  <IssuesList issues={issues} onToggleFixed={handleToggleFixed} />
+                )}
+              </div>
+            )}
+
+            {selectedItem.review_result && !showIssues && (
               <div>
                 <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">AI Review Result</h4>
                 <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">

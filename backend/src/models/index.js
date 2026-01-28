@@ -54,3 +54,14 @@ export const SecurityScan = createModel('security_scans');
 export const PerformanceReport = createModel('performance_reports');
 export const TestGeneration = createModel('test_generations');
 export const RefactoringSuggestion = createModel('refactoring_suggestions');
+
+// New models for additional features
+export const ReviewIssue = createModel('review_issues');
+export const GitHubIntegration = createModel('github_integrations');
+export const PullRequest = createModel('pull_requests');
+export const Team = createModel('teams');
+export const TeamMember = createModel('team_members');
+export const ReviewAssignment = createModel('review_assignments');
+export const Webhook = createModel('webhooks');
+export const WebhookEvent = createModel('webhook_events');
+export const ReviewMetric = createModel('review_metrics');
