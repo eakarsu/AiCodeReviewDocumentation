@@ -7,8 +7,18 @@ const router = express.Router();
 // Get all documentation entries
 router.get('/', async (req, res) => {
   try {
-    const docs = await Documentation.findAll();
-    res.json(docs);
+    const { page, limit, search, sort, order, ...filters } = req.query;
+    delete filters._;
+    const result = await Documentation.findAllPaginated({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 20,
+      search: search || '',
+      searchFields: ['title', 'description'],
+      sort: sort || 'created_at',
+      order: order || 'DESC',
+      filters
+    });
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

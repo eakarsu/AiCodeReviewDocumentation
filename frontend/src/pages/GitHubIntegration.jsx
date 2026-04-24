@@ -1,9 +1,11 @@
 // GitHub Integration Page - Connect and manage GitHub access
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+
 import PRFetcher from '../components/PRFetcher';
 import PRList from '../components/PRList';
 import { githubApi, pullRequestsApi } from '../services/api';
+import { useToast } from '../contexts/ToastContext';
+import { useConfirm } from '../components/ConfirmDialog';
 
 function GitHubIntegration() {
   const [connectionStatus, setConnectionStatus] = useState(null);
@@ -15,6 +17,8 @@ function GitHubIntegration() {
   const [pullRequests, setPullRequests] = useState([]);
   const [fetchedPRs, setFetchedPRs] = useState([]);
   const [activeTab, setActiveTab] = useState('fetched');
+  const { showToast } = useToast();
+  const confirm = useConfirm();
 
   useEffect(() => {
     checkStatus();
@@ -47,8 +51,8 @@ function GitHubIntegration() {
 
   const loadFetchedPRs = async () => {
     try {
-      const data = await pullRequestsApi.getAll();
-      setFetchedPRs(data);
+      const result = await pullRequestsApi.getAll();
+      setFetchedPRs(result.data || result);
     } catch (err) {
       console.error('Fetched PRs error:', err);
     }
@@ -63,24 +67,27 @@ function GitHubIntegration() {
       const result = await githubApi.connect(token);
       setConnectionStatus({ connected: true, ...result });
       setToken('');
+      showToast('Connected to GitHub', 'success');
       loadRepos();
     } catch (err) {
-      alert('Connection failed: ' + err.message);
+      showToast('Connection failed: ' + err.message, 'error');
     } finally {
       setConnecting(false);
     }
   };
 
   const handleDisconnect = async () => {
-    if (!confirm('Disconnect from GitHub?')) return;
+    const confirmed = await confirm('Disconnect from GitHub?', { title: 'Disconnect GitHub', confirmLabel: 'Disconnect' });
+    if (!confirmed) return;
 
     try {
       await githubApi.disconnect();
       setConnectionStatus({ connected: false });
       setRepos([]);
       setPullRequests([]);
+      showToast('Disconnected from GitHub', 'success');
     } catch (err) {
-      alert('Disconnect failed: ' + err.message);
+      showToast('Disconnect failed: ' + err.message, 'error');
     }
   };
 
@@ -95,7 +102,7 @@ function GitHubIntegration() {
     }
   };
 
-  const handlePRFetched = (pr) => {
+  const handlePRFetched = () => {
     loadFetchedPRs();
     setActiveTab('fetched');
   };
@@ -112,18 +119,11 @@ function GitHubIntegration() {
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">GitHub Integration</h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Connect to GitHub to fetch and review pull requests
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">GitHub Integration</h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            Connect to GitHub to fetch and review pull requests
+          </p>
         </div>
       </div>
 
@@ -318,6 +318,9 @@ function GitHubIntegration() {
                                     pullRequestsApi.fetch({ pr_url: pr.html_url }).then(() => {
                                       loadFetchedPRs();
                                       setActiveTab('fetched');
+                                      showToast('PR imported successfully', 'success');
+                                    }).catch(err => {
+                                      showToast('Import failed: ' + err.message, 'error');
                                     });
                                   }}
                                   className="text-xs px-2 py-1 rounded bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-900/50"

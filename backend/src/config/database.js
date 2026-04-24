@@ -303,6 +303,163 @@ export const initDatabase = async () => {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- Bug Predictions table
+    CREATE TABLE IF NOT EXISTS bug_predictions (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      code_snippet TEXT,
+      language VARCHAR(50),
+      predicted_bugs TEXT,
+      bug_probability INTEGER,
+      risk_areas JSONB,
+      ai_analysis TEXT,
+      status VARCHAR(20) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Code Explanations table (DevOps)
+    CREATE TABLE IF NOT EXISTS code_explanations (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      code_snippet TEXT,
+      language VARCHAR(50),
+      context VARCHAR(100) DEFAULT 'devops',
+      explanation TEXT,
+      key_concepts JSONB,
+      complexity_level VARCHAR(20),
+      ai_analysis TEXT,
+      status VARCHAR(20) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Tech Debt Items table (DevOps)
+    CREATE TABLE IF NOT EXISTS tech_debt_items (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      code_snippet TEXT,
+      language VARCHAR(50),
+      project_name VARCHAR(255),
+      debt_type VARCHAR(50),
+      severity VARCHAR(20),
+      estimated_effort VARCHAR(50),
+      debt_analysis TEXT,
+      remediation_plan TEXT,
+      priority_score INTEGER,
+      ai_analysis TEXT,
+      status VARCHAR(20) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Architecture Reviews table (DevOps)
+    CREATE TABLE IF NOT EXISTS architecture_reviews (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      architecture_diagram TEXT,
+      tech_stack TEXT,
+      system_type VARCHAR(100),
+      review_result TEXT,
+      recommendations JSONB,
+      scalability_score INTEGER,
+      maintainability_score INTEGER,
+      security_score INTEGER,
+      ai_analysis TEXT,
+      status VARCHAR(20) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Dependency Audits table (DevOps)
+    CREATE TABLE IF NOT EXISTS dependency_audits (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      dependencies_list TEXT,
+      package_manager VARCHAR(50),
+      project_type VARCHAR(50),
+      vulnerabilities JSONB,
+      outdated_packages JSONB,
+      license_issues JSONB,
+      audit_result TEXT,
+      risk_score INTEGER,
+      ai_analysis TEXT,
+      status VARCHAR(20) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Deployment Advices table (DevOps)
+    CREATE TABLE IF NOT EXISTS deployment_advices (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      current_setup TEXT,
+      target_environment VARCHAR(100),
+      deployment_type VARCHAR(50),
+      infrastructure_config TEXT,
+      deployment_strategy TEXT,
+      recommendations JSONB,
+      checklist JSONB,
+      risk_assessment TEXT,
+      ai_analysis TEXT,
+      status VARCHAR(20) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Users table
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      name VARCHAR(255),
+      role VARCHAR(20) DEFAULT 'viewer',
+      avatar_url VARCHAR(500),
+      email_verified BOOLEAN DEFAULT FALSE,
+      email_verification_token VARCHAR(255),
+      password_reset_token VARCHAR(255),
+      password_reset_expires TIMESTAMP,
+      two_factor_secret VARCHAR(255),
+      two_factor_enabled BOOLEAN DEFAULT FALSE,
+      last_login_at TIMESTAMP,
+      failed_login_attempts INTEGER DEFAULT 0,
+      locked_until TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- API Keys table
+    CREATE TABLE IF NOT EXISTS api_keys (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      key_hash VARCHAR(255) NOT NULL,
+      name VARCHAR(255) NOT NULL,
+      last_used_at TIMESTAMP,
+      expires_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Audit Logs table
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      user_email VARCHAR(255),
+      action VARCHAR(100) NOT NULL,
+      resource_type VARCHAR(100),
+      resource_id VARCHAR(100),
+      details JSONB,
+      ip_address VARCHAR(45),
+      user_agent TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
     -- Add severity columns to code_reviews if not exists
     DO $$
     BEGIN

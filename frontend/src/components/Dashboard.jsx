@@ -197,6 +197,85 @@ const features = [
     color: 'bg-rose-500',
     path: '/analytics',
     endpoint: null
+  },
+  // New AI Features
+  {
+    id: 'bug-prediction',
+    title: 'Bug Predictor',
+    description: 'AI-powered bug prediction before they occur',
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    ),
+    color: 'bg-orange-600',
+    path: '/bug-prediction',
+    endpoint: '/bug-prediction/count'
+  },
+  {
+    id: 'code-explainer',
+    title: 'Code Explainer',
+    description: 'DevOps-focused code explanations',
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    color: 'bg-sky-500',
+    path: '/code-explainer',
+    endpoint: '/code-explainer/count'
+  },
+  {
+    id: 'tech-debt',
+    title: 'Tech Debt Tracker',
+    description: 'Track and prioritize technical debt',
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    color: 'bg-amber-600',
+    path: '/tech-debt',
+    endpoint: '/tech-debt/count'
+  },
+  {
+    id: 'architecture-review',
+    title: 'Architecture Reviewer',
+    description: 'Review system architectures for best practices',
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </svg>
+    ),
+    color: 'bg-fuchsia-500',
+    path: '/architecture-review',
+    endpoint: '/architecture-review/count'
+  },
+  {
+    id: 'dependency-audit',
+    title: 'Dependency Auditor',
+    description: 'Audit dependencies for vulnerabilities',
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+      </svg>
+    ),
+    color: 'bg-lime-600',
+    path: '/dependency-audit',
+    endpoint: '/dependency-audit/count'
+  },
+  {
+    id: 'deployment-advice',
+    title: 'Deployment Advisor',
+    description: 'Get deployment strategies and checklists',
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+      </svg>
+    ),
+    color: 'bg-cyan-600',
+    path: '/deployment-advice',
+    endpoint: '/deployment-advice/count'
   }
 ];
 

@@ -1,10 +1,17 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 
-function Login({ onLogin }) {
+function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [totpCode, setTotpCode] = useState('');
+  const [needs2FA, setNeeds2FA] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { login, loading } = useAuth();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const handleAutoFill = () => {
     setEmail('demo@example.com');
@@ -15,26 +22,23 @@ function Login({ onLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
-    // Simple validation
     if (!email || !password) {
       setError('Please enter email and password');
-      setLoading(false);
       return;
     }
 
-    // Demo login - accept any credentials or use demo account
-    setTimeout(() => {
-      if (email === 'demo@example.com' && password === 'demo123456') {
-        onLogin({ email, name: 'Demo User' });
-      } else if (email.includes('@') && password.length >= 6) {
-        onLogin({ email, name: email.split('@')[0] });
-      } else {
-        setError('Invalid credentials. Use demo button or enter valid email and 6+ char password.');
+    try {
+      const result = await login(email, password, needs2FA ? totpCode : undefined);
+      if (result.requires_2fa) {
+        setNeeds2FA(true);
+        return;
       }
-      setLoading(false);
-    }, 500);
+      showToast('Welcome back!', 'success');
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -88,6 +92,23 @@ function Login({ onLogin }) {
               />
             </div>
 
+            {needs2FA && (
+              <div>
+                <label htmlFor="totp" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  2FA Code
+                </label>
+                <input
+                  type="text"
+                  id="totp"
+                  value={totpCode}
+                  onChange={(e) => setTotpCode(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                  placeholder="Enter 6-digit code"
+                  maxLength={6}
+                />
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading}
@@ -105,6 +126,11 @@ function Login({ onLogin }) {
                 'Sign In'
               )}
             </button>
+
+            <div className="flex items-center justify-between text-sm">
+              <Link to="/forgot-password" className="text-primary-600 hover:text-primary-700 font-medium">Forgot password?</Link>
+              <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">Create account</Link>
+            </div>
           </form>
 
           {/* Divider */}

@@ -92,19 +92,18 @@ router.post('/fetch', async (req, res) => {
 // List all fetched PRs
 router.get('/', async (req, res) => {
   try {
-    const result = await query(`
-      SELECT pr.*, cr.status as review_status, cr.severity_score
-      FROM pull_requests pr
-      LEFT JOIN code_reviews cr ON pr.review_id = cr.id
-      ORDER BY pr.created_at DESC
-    `);
-
-    res.json(result.rows.map(row => ({
-      ...row,
-      files_changed: typeof row.files_changed === 'string'
-        ? JSON.parse(row.files_changed)
-        : row.files_changed
-    })));
+    const { page, limit, search, sort, order, ...filters } = req.query;
+    delete filters._;
+    const result = await PullRequest.findAllPaginated({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 20,
+      search: search || '',
+      searchFields: ['title', 'author', 'repository'],
+      sort: sort || 'created_at',
+      order: order || 'DESC',
+      filters
+    });
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

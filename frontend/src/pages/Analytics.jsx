@@ -1,15 +1,17 @@
 // Analytics Page - Dashboard with charts and metrics
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+
 import { metricsApi } from '../services/api';
 import MetricCard from '../components/MetricCard';
 import TrendChart from '../components/TrendChart';
+import { useToast } from '../contexts/ToastContext';
 
 function Analytics() {
   const [dashboard, setDashboard] = useState(null);
   const [trends, setTrends] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchData();
@@ -27,6 +29,7 @@ function Analytics() {
       setCategories(categoriesData);
     } catch (err) {
       console.error('Error:', err);
+      showToast('Failed to load analytics data', 'error');
     } finally {
       setLoading(false);
     }
@@ -42,12 +45,7 @@ function Analytics() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Link to="/" className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </Link>
+        <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Analytics</h1>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -63,18 +61,11 @@ function Analytics() {
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Analytics</h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Review metrics and trends
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Analytics</h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            Review metrics and trends
+          </p>
         </div>
         <button onClick={fetchData} className="btn bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

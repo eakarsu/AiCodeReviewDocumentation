@@ -7,20 +7,18 @@ const router = express.Router();
 // Get all assignments with review info
 router.get('/', async (req, res) => {
   try {
-    const result = await query(`
-      SELECT ra.*, cr.title as review_title, cr.language, cr.status as review_status, cr.severity_score
-      FROM review_assignments ra
-      LEFT JOIN code_reviews cr ON ra.review_id = cr.id
-      ORDER BY
-        CASE ra.priority
-          WHEN 'urgent' THEN 1
-          WHEN 'high' THEN 2
-          WHEN 'medium' THEN 3
-          WHEN 'low' THEN 4
-        END,
-        ra.created_at DESC
-    `);
-    res.json(result.rows);
+    const { page, limit, search, sort, order, ...filters } = req.query;
+    delete filters._;
+    const result = await ReviewAssignment.findAllPaginated({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 20,
+      search: search || '',
+      searchFields: ['assigned_to', 'notes'],
+      sort: sort || 'created_at',
+      order: order || 'DESC',
+      filters
+    });
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

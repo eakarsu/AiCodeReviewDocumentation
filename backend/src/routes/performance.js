@@ -7,8 +7,18 @@ const router = express.Router();
 // Get all performance reports
 router.get('/', async (req, res) => {
   try {
-    const reports = await PerformanceReport.findAll();
-    res.json(reports);
+    const { page, limit, search, sort, order, ...filters } = req.query;
+    delete filters._;
+    const result = await PerformanceReport.findAllPaginated({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 20,
+      search: search || '',
+      searchFields: ['title', 'description'],
+      sort: sort || 'created_at',
+      order: order || 'DESC',
+      filters
+    });
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

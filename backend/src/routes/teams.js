@@ -7,14 +7,18 @@ const router = express.Router();
 // Get all teams with member count
 router.get('/', async (req, res) => {
   try {
-    const result = await query(`
-      SELECT t.*, COUNT(tm.id) as member_count
-      FROM teams t
-      LEFT JOIN team_members tm ON t.id = tm.team_id
-      GROUP BY t.id
-      ORDER BY t.created_at DESC
-    `);
-    res.json(result.rows);
+    const { page, limit, search, sort, order, ...filters } = req.query;
+    delete filters._;
+    const result = await Team.findAllPaginated({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 20,
+      search: search || '',
+      searchFields: ['name', 'description'],
+      sort: sort || 'created_at',
+      order: order || 'DESC',
+      filters
+    });
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -40,7 +40,7 @@ export const callOpenRouter = async (prompt, systemPrompt = '') => {
         model: DEFAULT_MODEL,
         messages,
         temperature: 0.7,
-        max_tokens: 4096
+        max_tokens: 10096
       })
     });
 
@@ -50,9 +50,15 @@ export const callOpenRouter = async (prompt, systemPrompt = '') => {
     }
 
     const data = await response.json();
+    let content = data.choices[0]?.message?.content || '';
+
+    // Strip markdown code fences that wrap the response (e.g. ```json ... ```)
+    // This prevents JSON.parse() failures when AI wraps responses in code blocks
+    content = content.replace(/^```[\w]*\n?/gm, '').replace(/\n?```$/gm, '').trim();
+
     return {
       success: true,
-      content: data.choices[0]?.message?.content || '',
+      content,
       usage: data.usage
     };
   } catch (error) {
@@ -171,6 +177,161 @@ export const aiRefactoringSuggestions = async (code, language) => {
   return callOpenRouter(prompt, systemPrompt);
 };
 
+// AI Bug Predictor
+export const aiBugPrediction = async (code, language) => {
+  const systemPrompt = 'You are an expert bug prediction AI. Analyze code to predict potential bugs before they occur. Focus on common patterns that lead to bugs.';
+  const prompt = `Analyze the following ${language} code and predict potential bugs:
+
+\`\`\`${language}
+${code}
+\`\`\`
+
+Provide a detailed analysis including:
+1. **Bug Probability Score** (0-100): Overall likelihood of bugs
+2. **Predicted Bugs**: List of potential bugs that might occur
+3. **Risk Areas**: Specific code sections that are bug-prone
+4. **Root Cause Analysis**: Why these areas might cause bugs
+5. **Prevention Recommendations**: How to prevent these bugs
+6. **Test Coverage Suggestions**: Specific tests to catch these bugs
+
+Format your response in a clear, structured way with sections and bullet points.`;
+
+  return callOpenRouter(prompt, systemPrompt);
+};
+
+// AI Code Explainer (DevOps focused)
+export const aiCodeExplainer = async (code, language, context = 'devops') => {
+  const systemPrompt = 'You are a DevOps expert who explains code in the context of infrastructure, CI/CD, deployment, and operations. Make complex code understandable.';
+  const prompt = `Explain the following ${language} code from a DevOps perspective:
+
+\`\`\`${language}
+${code}
+\`\`\`
+
+Provide a comprehensive explanation including:
+1. **Overview**: What does this code do?
+2. **DevOps Context**: How does this fit into DevOps practices?
+3. **Key Concepts**: Important concepts and patterns used
+4. **Infrastructure Impact**: How this affects infrastructure
+5. **Security Considerations**: Security implications
+6. **Best Practices**: DevOps best practices applicable here
+7. **Complexity Level**: Beginner/Intermediate/Advanced
+8. **Potential Issues**: What could go wrong in production
+
+Format your response clearly with sections and explanations suitable for team documentation.`;
+
+  return callOpenRouter(prompt, systemPrompt);
+};
+
+// AI Tech Debt Tracker
+export const aiTechDebtAnalysis = async (code, language, projectContext = '') => {
+  const systemPrompt = 'You are a technical debt analyst. Identify, categorize, and prioritize technical debt in code. Provide actionable remediation plans.';
+  const prompt = `Analyze the following ${language} code for technical debt:
+
+${projectContext ? `Project Context: ${projectContext}\n\n` : ''}
+\`\`\`${language}
+${code}
+\`\`\`
+
+Provide a comprehensive technical debt analysis:
+1. **Debt Identification**: List all technical debt items found
+2. **Debt Categories**: (Code Debt, Design Debt, Documentation Debt, Test Debt, Infrastructure Debt)
+3. **Severity Assessment**: Critical/High/Medium/Low for each item
+4. **Estimated Effort**: Time/effort to fix each item
+5. **Priority Score** (1-100): Based on impact and effort
+6. **Remediation Plan**: Step-by-step fix for each debt item
+7. **Quick Wins**: Easy fixes with high impact
+8. **Long-term Strategy**: How to prevent future debt
+
+Be specific about line numbers and exact issues when possible.`;
+
+  return callOpenRouter(prompt, systemPrompt);
+};
+
+// AI Architecture Reviewer
+export const aiArchitectureReview = async (architectureDesc, techStack, systemType = '') => {
+  const systemPrompt = 'You are a solutions architect expert. Review system architectures for scalability, maintainability, security, and best practices.';
+  const prompt = `Review the following system architecture:
+
+**System Type**: ${systemType || 'Not specified'}
+**Tech Stack**: ${techStack}
+
+**Architecture Description**:
+${architectureDesc}
+
+Provide a comprehensive architecture review:
+1. **Architecture Assessment**: Overall evaluation
+2. **Scalability Analysis**: Can it handle growth? Score (1-100)
+3. **Maintainability Review**: How easy to maintain? Score (1-100)
+4. **Security Evaluation**: Security posture. Score (1-100)
+5. **Performance Considerations**: Potential bottlenecks
+6. **Cost Optimization**: Suggestions for cost efficiency
+7. **Recommendations**: Prioritized list of improvements
+8. **Risk Areas**: Potential failure points
+9. **Best Practices Alignment**: How well it follows industry standards
+10. **Migration Considerations**: If changes are recommended
+
+Format as a professional architecture review document.`;
+
+  return callOpenRouter(prompt, systemPrompt);
+};
+
+// AI Dependency Auditor
+export const aiDependencyAudit = async (dependencies, packageManager, projectType = '') => {
+  const systemPrompt = 'You are a dependency security and compliance expert. Audit dependencies for vulnerabilities, outdated packages, and license issues.';
+  const prompt = `Audit the following dependencies:
+
+**Package Manager**: ${packageManager}
+**Project Type**: ${projectType || 'Not specified'}
+
+**Dependencies**:
+${dependencies}
+
+Provide a comprehensive dependency audit:
+1. **Security Vulnerabilities**: Known CVEs and security issues
+2. **Outdated Packages**: Packages that need updates
+3. **License Compliance**: License compatibility issues
+4. **Dependency Health**: Maintenance status of packages
+5. **Risk Score** (1-100): Overall dependency risk
+6. **Critical Updates**: Must-update packages
+7. **Recommended Alternatives**: Better alternatives for problematic packages
+8. **Update Strategy**: Safe update order and approach
+9. **Breaking Changes**: Potential breaking changes when updating
+10. **Dependency Graph Issues**: Circular dependencies, conflicts
+
+Prioritize security issues and provide actionable recommendations.`;
+
+  return callOpenRouter(prompt, systemPrompt);
+};
+
+// AI Deployment Advisor
+export const aiDeploymentAdvice = async (currentSetup, targetEnv, deploymentType = '') => {
+  const systemPrompt = 'You are a deployment and DevOps expert. Provide comprehensive deployment strategies, checklists, and best practices.';
+  const prompt = `Provide deployment advice for the following scenario:
+
+**Current Setup**:
+${currentSetup}
+
+**Target Environment**: ${targetEnv}
+**Deployment Type**: ${deploymentType || 'Not specified'}
+
+Provide comprehensive deployment guidance:
+1. **Deployment Strategy**: Recommended approach (Blue-Green, Canary, Rolling, etc.)
+2. **Pre-deployment Checklist**: Everything to verify before deploying
+3. **Deployment Steps**: Detailed step-by-step process
+4. **Rollback Plan**: How to roll back if issues occur
+5. **Monitoring Setup**: What to monitor during/after deployment
+6. **Risk Assessment**: Potential risks and mitigations
+7. **Zero-downtime Strategy**: How to minimize or eliminate downtime
+8. **Post-deployment Verification**: How to verify successful deployment
+9. **Infrastructure Requirements**: What's needed in target environment
+10. **Security Considerations**: Security checks for deployment
+
+Format as a professional deployment runbook.`;
+
+  return callOpenRouter(prompt, systemPrompt);
+};
+
 export default {
   callOpenRouter,
   aiCodeReview,
@@ -183,5 +344,11 @@ export default {
   aiSecurityScan,
   aiPerformanceAnalysis,
   aiGenerateTests,
-  aiRefactoringSuggestions
+  aiRefactoringSuggestions,
+  aiBugPrediction,
+  aiCodeExplainer,
+  aiTechDebtAnalysis,
+  aiArchitectureReview,
+  aiDependencyAudit,
+  aiDeploymentAdvice
 };

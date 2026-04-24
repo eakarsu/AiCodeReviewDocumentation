@@ -1,9 +1,12 @@
 // My Assignments Page - View and manage assigned reviews
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { assignmentsApi, codeReviewsApi } from '../services/api';
+import { assignmentsApi } from '../services/api';
 import { SeverityScore } from '../components/SeverityBadge';
 import DetailModal from '../components/DetailModal';
+import SearchBar from '../components/SearchBar';
+import EmptyState from '../components/EmptyState';
+import { useToast } from '../contexts/ToastContext';
 
 const priorityColors = {
   urgent: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
@@ -22,12 +25,14 @@ const statusColors = {
 function MyAssignments() {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, totalPages: 0 });
+  const [search, setSearch] = useState('');
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [filter, setFilter] = useState('all');
   const [userEmail, setUserEmail] = useState('');
+  const { showToast } = useToast();
 
   useEffect(() => {
-    // Get user email from localStorage
     const user = localStorage.getItem('user');
     if (user) {
       try {
@@ -35,29 +40,32 @@ function MyAssignments() {
         setUserEmail(parsed.email || '');
       } catch {}
     }
-    fetchAssignments();
   }, []);
 
-  const fetchAssignments = async () => {
+  const fetchAssignments = useCallback(async () => {
     try {
-      const data = await assignmentsApi.getAll();
-      setAssignments(data);
+      const result = await assignmentsApi.getAll({ page: pagination.page, limit: pagination.limit, search });
+      setAssignments(result.data || []);
+      setPagination(prev => ({ ...prev, ...result.pagination }));
     } catch (err) {
       console.error('Error:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, search]);
+
+  useEffect(() => { fetchAssignments(); }, [fetchAssignments]);
 
   const handleUpdateStatus = async (id, status) => {
     try {
       await assignmentsApi.update(id, { status });
+      showToast(`Assignment marked as ${status.replace('_', ' ')}`, 'success');
       fetchAssignments();
       if (selectedAssignment?.id === id) {
         setSelectedAssignment({ ...selectedAssignment, status });
       }
     } catch (err) {
-      alert('Error: ' + err.message);
+      showToast('Error: ' + err.message, 'error');
     }
   };
 
@@ -77,18 +85,11 @@ function MyAssignments() {
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Review Assignments</h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Track and manage code review assignments
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Review Assignments</h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            Track and manage code review assignments
+          </p>
         </div>
       </div>
 
@@ -108,20 +109,25 @@ function MyAssignments() {
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-sm text-gray-500 dark:text-gray-400">Filter:</span>
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-        >
-          <option value="all">All Assignments</option>
-          {userEmail && <option value="mine">My Assignments</option>}
-          <option value="pending">Pending</option>
-          <option value="in_progress">In Progress</option>
-          <option value="completed">Completed</option>
-        </select>
+      {/* Search & Filter */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="flex-1">
+          <SearchBar value={search} onChange={(v) => { setSearch(v); setPagination(p => ({ ...p, page: 1 })); }} placeholder="Search assignments..." />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500 dark:text-gray-400">Filter:</span>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          >
+            <option value="all">All Assignments</option>
+            {userEmail && <option value="mine">My Assignments</option>}
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
       </div>
 
       {/* Assignments List */}
@@ -132,9 +138,7 @@ function MyAssignments() {
           ))}
         </div>
       ) : filteredAssignments.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
-          <p className="text-gray-500 dark:text-gray-400">No assignments found</p>
-        </div>
+        <EmptyState title="No assignments found" description="Assignments will appear here when code reviews are assigned to team members." />
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="divide-y divide-gray-200 dark:divide-gray-700">

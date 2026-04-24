@@ -1,31 +1,38 @@
 // Webhooks Page - Configure and manage CI/CD webhooks
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+
 import { webhooksApi } from '../services/api';
 import DetailModal from '../components/DetailModal';
 import WebhookSetup from '../components/WebhookSetup';
+import SearchBar from '../components/SearchBar';
+import EmptyState from '../components/EmptyState';
+import { useToast } from '../contexts/ToastContext';
+import { useConfirm } from '../components/ConfirmDialog';
 
 function Webhooks() {
   const [webhooks, setWebhooks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, totalPages: 0 });
+  const [search, setSearch] = useState('');
   const [selectedWebhook, setSelectedWebhook] = useState(null);
   const [showNewForm, setShowNewForm] = useState(false);
   const [events, setEvents] = useState([]);
+  const { showToast } = useToast();
+  const confirm = useConfirm();
 
-  useEffect(() => {
-    fetchWebhooks();
-  }, []);
-
-  const fetchWebhooks = async () => {
+  const fetchWebhooks = useCallback(async () => {
     try {
-      const data = await webhooksApi.getAll();
-      setWebhooks(data);
+      const result = await webhooksApi.getAll({ page: pagination.page, limit: pagination.limit, search });
+      setWebhooks(result.data || []);
+      setPagination(prev => ({ ...prev, ...result.pagination }));
     } catch (err) {
       console.error('Error:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, search]);
+
+  useEffect(() => { fetchWebhooks(); }, [fetchWebhooks]);
 
   const fetchEvents = async (webhookId) => {
     try {
@@ -42,13 +49,15 @@ function Webhooks() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this webhook?')) return;
+    const confirmed = await confirm('Delete this webhook?', { title: 'Delete Webhook', confirmLabel: 'Delete' });
+    if (!confirmed) return;
     try {
       await webhooksApi.delete(id);
       setSelectedWebhook(null);
+      showToast('Webhook deleted', 'success');
       fetchWebhooks();
     } catch (err) {
-      alert('Error: ' + err.message);
+      showToast('Error: ' + err.message, 'error');
     }
   };
 
@@ -57,14 +66,16 @@ function Webhooks() {
       await webhooksApi.update(id, {
         status: currentStatus === 'active' ? 'paused' : 'active'
       });
+      showToast(`Webhook ${currentStatus === 'active' ? 'paused' : 'activated'}`, 'success');
       fetchWebhooks();
     } catch (err) {
-      alert('Error: ' + err.message);
+      showToast('Error: ' + err.message, 'error');
     }
   };
 
   const handleCreated = (webhook) => {
     setShowNewForm(false);
+    showToast('Webhook created', 'success');
     fetchWebhooks();
     setSelectedWebhook(webhook);
   };
@@ -73,18 +84,11 @@ function Webhooks() {
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Webhooks</h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Auto-trigger reviews on push or pull request events
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Webhooks</h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            Auto-trigger reviews on push or pull request events
+          </p>
         </div>
         <button onClick={() => setShowNewForm(true)} className="btn btn-primary flex items-center gap-2">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,6 +96,11 @@ function Webhooks() {
           </svg>
           New Webhook
         </button>
+      </div>
+
+      {/* Search */}
+      <div className="mb-4">
+        <SearchBar value={search} onChange={(v) => { setSearch(v); setPagination(p => ({ ...p, page: 1 })); }} placeholder="Search webhooks..." />
       </div>
 
       {/* Webhooks List */}
@@ -102,15 +111,11 @@ function Webhooks() {
           ))}
         </div>
       ) : webhooks.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
-          <svg className="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-          </svg>
-          <p className="text-gray-500 dark:text-gray-400">No webhooks configured</p>
-          <button onClick={() => setShowNewForm(true)} className="mt-4 text-primary-600 hover:text-primary-700">
-            Create your first webhook
-          </button>
-        </div>
+        <EmptyState
+          title="No webhooks configured"
+          description="Create a webhook to auto-trigger code reviews on push or PR events."
+          action={{ label: 'Create Webhook', onClick: () => setShowNewForm(true) }}
+        />
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -199,7 +204,10 @@ function Webhooks() {
                   {`${window.location.origin.replace('3000', '5001')}/api/webhooks/github/${selectedWebhook.id}`}
                 </code>
                 <button
-                  onClick={() => navigator.clipboard.writeText(`${window.location.origin.replace('3000', '5001')}/api/webhooks/github/${selectedWebhook.id}`)}
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin.replace('3000', '5001')}/api/webhooks/github/${selectedWebhook.id}`);
+                    showToast('URL copied to clipboard', 'success');
+                  }}
                   className="p-2 text-gray-500 hover:text-gray-700"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

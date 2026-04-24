@@ -8,6 +8,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 import { initDatabase } from './config/database.js';
+import { optionalAuth } from './middleware/auth.js';
+import { rateLimit } from './middleware/rateLimit.js';
 import codeReviewsRouter from './routes/codeReviews.js';
 import documentationRouter from './routes/documentation.js';
 import codeAnalysisRouter from './routes/codeAnalysis.js';
@@ -24,6 +26,16 @@ import teamsRouter from './routes/teams.js';
 import assignmentsRouter from './routes/assignments.js';
 import webhooksRouter from './routes/webhooks.js';
 import metricsRouter from './routes/metrics.js';
+import bugPredictionRouter from './routes/bugPrediction.js';
+import codeExplainerRouter from './routes/codeExplainer.js';
+import techDebtRouter from './routes/techDebt.js';
+import architectureReviewRouter from './routes/architectureReview.js';
+import dependencyAuditRouter from './routes/dependencyAudit.js';
+import deploymentAdviceRouter from './routes/deploymentAdvice.js';
+import authRouter from './routes/auth.js';
+import auditLogsRouter from './routes/auditLogs.js';
+import exportsRouter from './routes/exports.js';
+import bulkRouter from './routes/bulk.js';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -35,10 +47,17 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 
+// Optional auth on all routes - sets req.user if token present
+app.use(optionalAuth);
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Auth routes with rate limiting
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 'Too many auth attempts' });
+app.use('/api/auth', authLimiter, authRouter);
 
 // Feature routes
 app.use('/api/code-reviews', codeReviewsRouter);
@@ -57,6 +76,15 @@ app.use('/api/teams', teamsRouter);
 app.use('/api/assignments', assignmentsRouter);
 app.use('/api/webhooks', webhooksRouter);
 app.use('/api/metrics', metricsRouter);
+app.use('/api/bug-prediction', bugPredictionRouter);
+app.use('/api/code-explainer', codeExplainerRouter);
+app.use('/api/tech-debt', techDebtRouter);
+app.use('/api/architecture-review', architectureReviewRouter);
+app.use('/api/dependency-audit', dependencyAuditRouter);
+app.use('/api/deployment-advice', deploymentAdviceRouter);
+app.use('/api/audit-logs', auditLogsRouter);
+app.use('/api/exports', exportsRouter);
+app.use('/api/bulk', bulkRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

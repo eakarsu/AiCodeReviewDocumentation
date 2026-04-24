@@ -7,8 +7,18 @@ const router = express.Router();
 // Get all code analysis entries
 router.get('/', async (req, res) => {
   try {
-    const analyses = await CodeAnalysis.findAll();
-    res.json(analyses);
+    const { page, limit, search, sort, order, ...filters } = req.query;
+    delete filters._;
+    const result = await CodeAnalysis.findAllPaginated({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 20,
+      search: search || '',
+      searchFields: ['title', 'description'],
+      sort: sort || 'created_at',
+      order: order || 'DESC',
+      filters
+    });
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

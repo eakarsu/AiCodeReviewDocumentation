@@ -1,4 +1,5 @@
 import { initDatabase, query } from '../config/database.js';
+import { hashPassword, generateToken } from '../utils/crypto.js';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -453,6 +454,271 @@ const seedRefactoringSuggestions = async () => {
   console.log('Seeded refactoring_suggestions');
 };
 
+// Seed Bug Predictions
+const seedBugPredictions = async () => {
+  const items = [
+    { title: 'Async Race Condition', description: 'Potential race condition in async code', code_snippet: 'let data = null;\nasync function fetchData() {\n  data = await api.get();\n}\nfunction processData() {\n  return data.map(item => item.value);\n}', language: 'javascript', status: 'completed', bug_probability: 85, ai_analysis: 'High probability of null reference error due to race condition.' },
+    { title: 'Memory Leak in Event Listener', description: 'Potential memory leak from unremoved listener', code_snippet: 'function setupListener() {\n  window.addEventListener("scroll", handleScroll);\n}\ncomponentDidMount() {\n  setupListener();\n}', language: 'javascript', status: 'pending' },
+    { title: 'Integer Overflow Risk', description: 'Potential integer overflow in calculations', code_snippet: 'function calculateTotal(items) {\n  let total = 0;\n  for (const item of items) {\n    total += item.price * item.quantity;\n  }\n  return total;\n}', language: 'javascript', status: 'completed', bug_probability: 45, ai_analysis: 'Medium risk of overflow with large datasets.' },
+    { title: 'SQL Injection Vulnerability', description: 'User input directly in query', code_snippet: 'const getUser = (id) => {\n  return db.query(`SELECT * FROM users WHERE id = ${id}`);\n};', language: 'javascript', status: 'completed', bug_probability: 95, ai_analysis: 'Critical SQL injection vulnerability detected.' },
+    { title: 'Null Pointer Exception', description: 'Missing null check before access', code_snippet: 'function getUserName(user) {\n  return user.profile.name.first;\n}', language: 'javascript', status: 'pending' },
+    { title: 'Infinite Loop Risk', description: 'Loop condition may never be false', code_snippet: 'while (items.length > 0) {\n  processItem(items[0]);\n  // Missing: items.shift();\n}', language: 'javascript', status: 'completed', bug_probability: 90, ai_analysis: 'Very high probability of infinite loop.' },
+    { title: 'Type Coercion Bug', description: 'Implicit type coercion issue', code_snippet: 'function isEqual(a, b) {\n  return a == b;\n}', language: 'javascript', status: 'pending' },
+    { title: 'Closure Variable Capture', description: 'Loop variable captured incorrectly', code_snippet: 'for (var i = 0; i < 5; i++) {\n  setTimeout(() => console.log(i), 100);\n}', language: 'javascript', status: 'completed', bug_probability: 80, ai_analysis: 'Classic closure bug - all callbacks will log 5.' },
+    { title: 'Unhandled Promise Rejection', description: 'Missing error handling in async', code_snippet: 'async function fetchUser(id) {\n  const response = await fetch(`/api/users/${id}`);\n  return response.json();\n}', language: 'javascript', status: 'pending' },
+    { title: 'State Mutation Bug', description: 'Direct state mutation in React', code_snippet: 'function addItem(item) {\n  this.state.items.push(item);\n  this.setState({ items: this.state.items });\n}', language: 'javascript', status: 'completed', bug_probability: 75, ai_analysis: 'Direct state mutation can cause rendering issues.' },
+    { title: 'Off-by-One Error', description: 'Array boundary issue', code_snippet: 'for (let i = 0; i <= array.length; i++) {\n  console.log(array[i]);\n}', language: 'javascript', status: 'completed', bug_probability: 70, ai_analysis: 'Off-by-one error will cause undefined access.' },
+    { title: 'Async/Await Missing', description: 'Promise not awaited', code_snippet: 'function saveData(data) {\n  const result = database.save(data);\n  console.log("Saved:", result);\n}', language: 'javascript', status: 'pending' },
+    { title: 'Division by Zero', description: 'No check for zero divisor', code_snippet: 'function calculateAverage(total, count) {\n  return total / count;\n}', language: 'javascript', status: 'completed', bug_probability: 60, ai_analysis: 'Risk of division by zero when count is 0.' },
+    { title: 'Regex Denial of Service', description: 'Vulnerable regex pattern', code_snippet: 'const emailRegex = /^([a-zA-Z0-9]+)+@[a-zA-Z]+$/;\nfunction validateEmail(email) {\n  return emailRegex.test(email);\n}', language: 'javascript', status: 'pending' },
+    { title: 'Cross-Site Scripting Risk', description: 'Unescaped HTML rendering', code_snippet: 'function renderComment(comment) {\n  document.getElementById("comments").innerHTML += comment.text;\n}', language: 'javascript', status: 'completed', bug_probability: 92, ai_analysis: 'High XSS risk from unescaped user content.' }
+  ];
+
+  for (const item of items) {
+    await query(
+      `INSERT INTO bug_predictions (title, description, code_snippet, language, status, bug_probability, ai_analysis)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [item.title, item.description, item.code_snippet, item.language, item.status, item.bug_probability || null, item.ai_analysis || null]
+    );
+  }
+  console.log('Seeded bug_predictions');
+};
+
+// Seed Code Explanations
+const seedCodeExplanations = async () => {
+  const items = [
+    { title: 'Kubernetes Deployment Config', description: 'K8s deployment with replicas', code_snippet: 'apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx-deployment\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: nginx\n  template:\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:1.14.2\n        ports:\n        - containerPort: 80', language: 'yaml', context: 'kubernetes', status: 'completed', complexity_level: 'intermediate', ai_analysis: 'This deployment creates 3 replicas of nginx.' },
+    { title: 'Docker Multi-stage Build', description: 'Optimized container build', code_snippet: 'FROM node:18 AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM node:18-alpine\nWORKDIR /app\nCOPY --from=builder /app/dist ./dist\nCMD ["node", "dist/index.js"]', language: 'dockerfile', context: 'devops', status: 'pending' },
+    { title: 'Terraform AWS VPC', description: 'VPC infrastructure setup', code_snippet: 'resource "aws_vpc" "main" {\n  cidr_block = "10.0.0.0/16"\n  enable_dns_hostnames = true\n  tags = {\n    Name = "main-vpc"\n  }\n}', language: 'terraform', context: 'infrastructure', status: 'completed', complexity_level: 'beginner', ai_analysis: 'Creates a VPC with DNS support.' },
+    { title: 'GitHub Actions CI/CD', description: 'Automated deployment pipeline', code_snippet: 'name: CI/CD\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v2\n      - run: npm ci\n      - run: npm test\n      - run: npm run build', language: 'yaml', context: 'ci-cd', status: 'pending' },
+    { title: 'Ansible Playbook', description: 'Server configuration', code_snippet: '- hosts: webservers\n  become: yes\n  tasks:\n    - name: Install nginx\n      apt:\n        name: nginx\n        state: present\n    - name: Start nginx\n      service:\n        name: nginx\n        state: started', language: 'ansible', context: 'infrastructure', status: 'completed', complexity_level: 'intermediate' },
+    { title: 'Prometheus Alert Rules', description: 'Monitoring alert configuration', code_snippet: 'groups:\n- name: example\n  rules:\n  - alert: HighMemoryUsage\n    expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10\n    for: 5m\n    labels:\n      severity: critical', language: 'yaml', context: 'monitoring', status: 'pending' },
+    { title: 'Bash Deployment Script', description: 'Shell deployment automation', code_snippet: '#!/bin/bash\nset -e\necho "Deploying to production..."\ngit pull origin main\nnpm ci --production\npm2 reload all\necho "Deployment complete!"', language: 'bash', context: 'devops', status: 'completed', complexity_level: 'beginner' },
+    { title: 'Nginx Reverse Proxy', description: 'Load balancer configuration', code_snippet: 'upstream backend {\n    server 127.0.0.1:3001;\n    server 127.0.0.1:3002;\n}\nserver {\n    listen 80;\n    location / {\n        proxy_pass http://backend;\n        proxy_set_header Host $host;\n    }\n}', language: 'nginx', context: 'infrastructure', status: 'pending' },
+    { title: 'AWS CloudFormation Stack', description: 'Infrastructure as code', code_snippet: 'AWSTemplateFormatVersion: "2010-09-09"\nResources:\n  MyEC2Instance:\n    Type: AWS::EC2::Instance\n    Properties:\n      InstanceType: t2.micro\n      ImageId: ami-0c55b159cbfafe1f0', language: 'yaml', context: 'infrastructure', status: 'completed', complexity_level: 'intermediate' },
+    { title: 'Helm Chart Values', description: 'Kubernetes package config', code_snippet: 'replicaCount: 3\nimage:\n  repository: myapp\n  tag: latest\nservice:\n  type: ClusterIP\n  port: 80\ningress:\n  enabled: true\n  hosts:\n    - myapp.example.com', language: 'yaml', context: 'kubernetes', status: 'pending' },
+    { title: 'Jenkins Pipeline', description: 'CI/CD pipeline definition', code_snippet: 'pipeline {\n    agent any\n    stages {\n        stage("Build") {\n            steps {\n                sh "npm install"\n                sh "npm run build"\n            }\n        }\n        stage("Deploy") {\n            steps {\n                sh "kubectl apply -f k8s/"\n            }\n        }\n    }\n}', language: 'groovy', context: 'ci-cd', status: 'completed', complexity_level: 'intermediate' },
+    { title: 'Grafana Dashboard JSON', description: 'Monitoring dashboard config', code_snippet: '{\n  "title": "System Metrics",\n  "panels": [\n    {\n      "title": "CPU Usage",\n      "type": "graph",\n      "targets": [{\n        "expr": "rate(cpu_usage[5m])"\n      }]\n    }\n  ]\n}', language: 'json', context: 'monitoring', status: 'pending' },
+    { title: 'Docker Compose Stack', description: 'Multi-container application', code_snippet: 'version: "3.8"\nservices:\n  web:\n    build: .\n    ports:\n      - "3000:3000"\n  db:\n    image: postgres:13\n    environment:\n      POSTGRES_PASSWORD: secret', language: 'yaml', context: 'devops', status: 'completed', complexity_level: 'beginner' },
+    { title: 'Istio Virtual Service', description: 'Service mesh routing', code_snippet: 'apiVersion: networking.istio.io/v1alpha3\nkind: VirtualService\nmetadata:\n  name: reviews\nspec:\n  hosts:\n  - reviews\n  http:\n  - route:\n    - destination:\n        host: reviews\n        subset: v1', language: 'yaml', context: 'kubernetes', status: 'pending' },
+    { title: 'Vault Secret Config', description: 'Secrets management', code_snippet: 'path "secret/data/*" {\n  capabilities = ["create", "read", "update", "delete", "list"]\n}\npath "secret/metadata/*" {\n  capabilities = ["list"]\n}', language: 'hcl', context: 'security', status: 'completed', complexity_level: 'advanced' }
+  ];
+
+  for (const item of items) {
+    await query(
+      `INSERT INTO code_explanations (title, description, code_snippet, language, context, status, complexity_level, ai_analysis)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [item.title, item.description, item.code_snippet, item.language, item.context, item.status, item.complexity_level || null, item.ai_analysis || null]
+    );
+  }
+  console.log('Seeded code_explanations');
+};
+
+// Seed Tech Debt Items
+const seedTechDebtItems = async () => {
+  const items = [
+    { title: 'Legacy Authentication System', description: 'Old auth system needs modernization', code_snippet: 'function authenticate(user, pass) {\n  const hash = md5(pass);\n  return db.query(`SELECT * FROM users WHERE password = "${hash}"`);\n}', language: 'javascript', project_name: 'Main API', debt_type: 'security', severity: 'critical', status: 'completed', priority_score: 95, ai_analysis: 'Critical: MD5 is insecure, SQL injection risk.' },
+    { title: 'Monolithic Service', description: 'Single service handling too much', code_snippet: 'class MainService {\n  handleUsers() {}\n  handleOrders() {}\n  handlePayments() {}\n  handleNotifications() {}\n  handleReports() {}\n}', language: 'javascript', project_name: 'Backend', debt_type: 'design', severity: 'high', status: 'pending' },
+    { title: 'No Test Coverage', description: 'Critical module lacks tests', code_snippet: 'export function processPayment(order) {\n  // 500 lines of untested payment logic\n}', language: 'javascript', project_name: 'Payment Service', debt_type: 'test', severity: 'high', status: 'completed', priority_score: 85, ai_analysis: 'High risk without test coverage.' },
+    { title: 'Hardcoded Configuration', description: 'Config values in source code', code_snippet: 'const API_URL = "http://production-server.com";\nconst DB_PASSWORD = "secret123";\nconst API_KEY = "sk-1234567890";', language: 'javascript', project_name: 'Web App', debt_type: 'infrastructure', severity: 'critical', status: 'pending' },
+    { title: 'Outdated Dependencies', description: 'Many packages years old', code_snippet: '{\n  "dependencies": {\n    "express": "3.0.0",\n    "lodash": "2.0.0",\n    "moment": "1.0.0"\n  }\n}', language: 'json', project_name: 'API Gateway', debt_type: 'infrastructure', severity: 'high', status: 'completed', priority_score: 78 },
+    { title: 'Duplicate Code Blocks', description: 'Same logic copied multiple times', code_snippet: '// In file1.js\nfunction validateEmail(email) {\n  return /^[^@]+@[^@]+$/.test(email);\n}\n// Same in file2.js, file3.js, file4.js', language: 'javascript', project_name: 'Frontend', debt_type: 'code', severity: 'medium', status: 'pending' },
+    { title: 'Missing Documentation', description: 'No API documentation', code_snippet: '// No comments or documentation\napp.post("/api/v1/complex-endpoint", complexHandler);', language: 'javascript', project_name: 'API', debt_type: 'documentation', severity: 'medium', status: 'completed', priority_score: 60 },
+    { title: 'God Object Anti-pattern', description: 'Class with too many responsibilities', code_snippet: 'class Application {\n  // 2000+ lines handling everything\n  users; orders; payments; notifications;\n  // 50+ methods\n}', language: 'javascript', project_name: 'Core', debt_type: 'design', severity: 'high', status: 'pending' },
+    { title: 'Callback Hell', description: 'Deeply nested callbacks', code_snippet: 'getData(function(a) {\n  getMoreData(a, function(b) {\n    getEvenMoreData(b, function(c) {\n      processData(c, function(d) {\n        saveData(d, function(e) {});\n      });\n    });\n  });\n});', language: 'javascript', project_name: 'Data Pipeline', debt_type: 'code', severity: 'medium', status: 'completed', priority_score: 55 },
+    { title: 'No Error Handling', description: 'Missing error boundaries', code_snippet: 'async function processOrder(order) {\n  const payment = await chargeCard(order);\n  const shipping = await createShipment(order);\n  await sendConfirmation(order);\n}', language: 'javascript', project_name: 'Order Service', debt_type: 'code', severity: 'high', status: 'pending' },
+    { title: 'Mixed Concerns in Components', description: 'UI and business logic combined', code_snippet: 'function OrderForm() {\n  const [order, setOrder] = useState({});\n  // 200 lines of business logic\n  // 100 lines of API calls\n  // 150 lines of JSX\n}', language: 'javascript', project_name: 'Frontend', debt_type: 'design', severity: 'medium', status: 'completed', priority_score: 50 },
+    { title: 'Inefficient Database Queries', description: 'N+1 query problem', code_snippet: 'const users = await User.findAll();\nfor (const user of users) {\n  user.orders = await Order.findAll({ userId: user.id });\n}', language: 'javascript', project_name: 'API', debt_type: 'performance', severity: 'high', status: 'pending' },
+    { title: 'Inconsistent Coding Style', description: 'No linting or formatting', code_snippet: 'function getData(){\nreturn fetch(url)\n.then(r=>r.json())\n}\n\nconst  getData2 = async () => {\n    const response = await fetch( url )\n    return response.json()\n}', language: 'javascript', project_name: 'Shared Lib', debt_type: 'code', severity: 'low', status: 'completed', priority_score: 35 },
+    { title: 'Deprecated API Usage', description: 'Using sunset APIs', code_snippet: 'import { __SECRET_INTERNALS_DO_NOT_USE } from "react";\nimport { unstable_batchedUpdates } from "react-dom";', language: 'javascript', project_name: 'Frontend', debt_type: 'infrastructure', severity: 'medium', status: 'pending' },
+    { title: 'No Logging Infrastructure', description: 'Console.log everywhere', code_snippet: 'function processPayment(payment) {\n  console.log("Processing payment", payment);\n  // ...\n  console.log("Payment done");\n}', language: 'javascript', project_name: 'All Services', debt_type: 'infrastructure', severity: 'medium', status: 'completed', priority_score: 45 }
+  ];
+
+  for (const item of items) {
+    await query(
+      `INSERT INTO tech_debt_items (title, description, code_snippet, language, project_name, debt_type, severity, status, priority_score, ai_analysis)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      [item.title, item.description, item.code_snippet, item.language, item.project_name, item.debt_type, item.severity || null, item.status, item.priority_score || null, item.ai_analysis || null]
+    );
+  }
+  console.log('Seeded tech_debt_items');
+};
+
+// Seed Architecture Reviews
+const seedArchitectureReviews = async () => {
+  const items = [
+    { title: 'E-Commerce Platform', description: 'Large scale e-commerce system', architecture_diagram: 'Frontend (React) -> API Gateway -> Microservices (User, Product, Order, Payment) -> PostgreSQL + Redis + Elasticsearch', tech_stack: 'React, Node.js, PostgreSQL, Redis, Elasticsearch, Docker, Kubernetes', system_type: 'microservices', status: 'completed', scalability_score: 85, maintainability_score: 78, security_score: 72 },
+    { title: 'Real-time Chat Application', description: 'Scalable messaging platform', architecture_diagram: 'Mobile/Web Clients -> WebSocket Server -> Redis Pub/Sub -> MongoDB\nPresence Service -> Redis\nNotification Service -> Firebase', tech_stack: 'React Native, Node.js, Socket.io, Redis, MongoDB, Firebase', system_type: 'event-driven', status: 'pending' },
+    { title: 'Data Analytics Pipeline', description: 'Big data processing system', architecture_diagram: 'Data Sources -> Kafka -> Spark Streaming -> Data Lake (S3)\nBatch Processing -> Spark -> Data Warehouse (Redshift)\nBI Tools -> Metabase', tech_stack: 'Apache Kafka, Spark, S3, Redshift, Python, Airflow', system_type: 'event-driven', status: 'completed', scalability_score: 92, maintainability_score: 65, security_score: 80 },
+    { title: 'Content Management System', description: 'Headless CMS architecture', architecture_diagram: 'Admin Panel -> GraphQL API -> PostgreSQL\nCDN -> Static Site Generator -> Content API', tech_stack: 'Next.js, GraphQL, PostgreSQL, Cloudflare, Vercel', system_type: 'serverless', status: 'pending' },
+    { title: 'IoT Device Management', description: 'IoT platform architecture', architecture_diagram: 'IoT Devices -> MQTT Broker -> Message Processor -> TimescaleDB\nDevice Registry -> PostgreSQL\nDashboard -> Grafana', tech_stack: 'MQTT, Node.js, TimescaleDB, PostgreSQL, Grafana, Docker', system_type: 'event-driven', status: 'completed', scalability_score: 88, maintainability_score: 70, security_score: 75 },
+    { title: 'Banking Application', description: 'Core banking system', architecture_diagram: 'Mobile App -> API Gateway (Kong) -> Core Banking Services\nTransaction Service -> Event Store -> CQRS Read Models\nAll services -> PostgreSQL (Primary) + Read Replicas', tech_stack: 'Java, Spring Boot, PostgreSQL, Kafka, Kong, Kubernetes', system_type: 'microservices', status: 'pending' },
+    { title: 'Social Media Platform', description: 'User-generated content platform', architecture_diagram: 'Web/Mobile -> CDN -> Load Balancer -> API Servers\nFeed Service -> Redis + Cassandra\nMedia Service -> S3 + CloudFront\nSearch -> Elasticsearch', tech_stack: 'React, Node.js, Cassandra, Redis, Elasticsearch, S3', system_type: 'microservices', status: 'completed', scalability_score: 90, maintainability_score: 68, security_score: 70 },
+    { title: 'Healthcare Platform', description: 'HIPAA compliant health system', architecture_diagram: 'Patient Portal -> API Gateway -> Auth Service (OAuth2)\nEHR Service -> Encrypted PostgreSQL\nAudit Service -> Immutable Log Storage\nAll traffic through VPN', tech_stack: 'React, .NET Core, PostgreSQL, Azure, Auth0', system_type: 'modular-monolith', status: 'pending' },
+    { title: 'Gaming Backend', description: 'Multiplayer game server', architecture_diagram: 'Game Clients -> Regional Edge Servers -> Central Game State\nMatchmaking -> Redis Cluster\nPlayer Data -> Distributed Cache + PostgreSQL\nLeaderboards -> Redis Sorted Sets', tech_stack: 'Go, Redis, PostgreSQL, WebSocket, Kubernetes', system_type: 'event-driven', status: 'completed', scalability_score: 95, maintainability_score: 72, security_score: 78 },
+    { title: 'Video Streaming Service', description: 'VOD streaming platform', architecture_diagram: 'Upload Service -> Transcoding Queue -> FFmpeg Workers\nCDN Edge Servers -> Origin Server\nMetadata Service -> PostgreSQL\nRecommendations -> ML Pipeline', tech_stack: 'Node.js, FFmpeg, S3, CloudFront, PostgreSQL, TensorFlow', system_type: 'microservices', status: 'pending' },
+    { title: 'Enterprise ERP', description: 'Large enterprise resource planning', architecture_diagram: 'Web Portal -> API Layer -> Domain Services (HR, Finance, Inventory)\nIntegration Bus -> External Systems\nReporting -> Data Warehouse\nAll modules -> Shared PostgreSQL', tech_stack: 'Angular, Java, Spring, PostgreSQL, RabbitMQ, Jasper', system_type: 'modular-monolith', status: 'completed', scalability_score: 65, maintainability_score: 80, security_score: 85 },
+    { title: 'Ride-sharing Platform', description: 'On-demand transportation', architecture_diagram: 'Mobile Apps -> API Gateway -> Driver/Rider Services\nMatching Engine -> Geospatial Index (PostGIS)\nPricing Service -> ML Model\nReal-time Tracking -> Redis Geospatial', tech_stack: 'React Native, Go, PostgreSQL, PostGIS, Redis, Kafka', system_type: 'microservices', status: 'pending' },
+    { title: 'CI/CD Platform', description: 'Build and deployment system', architecture_diagram: 'GitHub Webhook -> Build Scheduler -> Worker Nodes (K8s)\nArtifact Storage -> S3\nDeployment Engine -> Kubernetes API\nDashboard -> Build Status + Logs', tech_stack: 'Go, Kubernetes, S3, PostgreSQL, React', system_type: 'event-driven', status: 'completed', scalability_score: 87, maintainability_score: 82, security_score: 80 },
+    { title: 'Newsletter Platform', description: 'Email marketing system', architecture_diagram: 'Editor UI -> Content API -> PostgreSQL\nScheduler -> Email Queue -> SMTP Workers\nTracking Pixel -> Analytics Pipeline\nUnsubscribe Service', tech_stack: 'Vue.js, Node.js, PostgreSQL, Redis, SendGrid', system_type: 'serverless', status: 'pending' },
+    { title: 'Inventory Management', description: 'Warehouse management system', architecture_diagram: 'Warehouse Apps -> Central API -> PostgreSQL\nBarcode Scanners -> Real-time Updates\nReporting Dashboard -> Read Replicas\nIntegration with ERP/Shipping', tech_stack: 'React, Node.js, PostgreSQL, Redis, REST APIs', system_type: 'monolithic', status: 'completed', scalability_score: 70, maintainability_score: 85, security_score: 75 }
+  ];
+
+  for (const item of items) {
+    await query(
+      `INSERT INTO architecture_reviews (title, description, architecture_diagram, tech_stack, system_type, status, scalability_score, maintainability_score, security_score)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [item.title, item.description, item.architecture_diagram, item.tech_stack, item.system_type, item.status, item.scalability_score || null, item.maintainability_score || null, item.security_score || null]
+    );
+  }
+  console.log('Seeded architecture_reviews');
+};
+
+// Seed Dependency Audits
+const seedDependencyAudits = async () => {
+  const items = [
+    { title: 'React Frontend Dependencies', description: 'Main frontend project', dependencies_list: '{\n  "react": "17.0.2",\n  "react-dom": "17.0.2",\n  "axios": "0.21.1",\n  "lodash": "4.17.20",\n  "moment": "2.29.1"\n}', package_manager: 'npm', project_type: 'web-frontend', status: 'completed', risk_score: 45, ai_analysis: 'Moderate risk: axios has known vulnerabilities, moment is deprecated.' },
+    { title: 'Node.js API Dependencies', description: 'Backend API service', dependencies_list: '{\n  "express": "4.17.1",\n  "jsonwebtoken": "8.5.1",\n  "bcrypt": "5.0.1",\n  "pg": "8.7.1",\n  "cors": "2.8.5"\n}', package_manager: 'npm', project_type: 'api', status: 'pending' },
+    { title: 'Python ML Pipeline', description: 'Machine learning service', dependencies_list: 'numpy==1.19.5\npandas==1.2.0\nscikit-learn==0.24.0\ntensorflow==2.4.0\nrequests==2.25.1', package_manager: 'pip', project_type: 'microservice', status: 'completed', risk_score: 60, ai_analysis: 'High risk: older tensorflow version with security issues.' },
+    { title: 'Go Microservice', description: 'Auth service dependencies', dependencies_list: 'module auth-service\n\ngo 1.17\n\nrequire (\n  github.com/gin-gonic/gin v1.7.4\n  github.com/golang-jwt/jwt v3.2.2\n  github.com/go-redis/redis v8.11.3\n)', package_manager: 'go', project_type: 'microservice', status: 'pending' },
+    { title: 'Java Spring Application', description: 'Enterprise backend', dependencies_list: '<dependencies>\n  <dependency>\n    <groupId>org.springframework.boot</groupId>\n    <artifactId>spring-boot-starter-web</artifactId>\n    <version>2.5.0</version>\n  </dependency>\n  <dependency>\n    <groupId>log4j</groupId>\n    <artifactId>log4j</artifactId>\n    <version>1.2.17</version>\n  </dependency>\n</dependencies>', package_manager: 'maven', project_type: 'api', status: 'completed', risk_score: 95, ai_analysis: 'Critical: log4j 1.x has severe vulnerabilities (Log4Shell).' },
+    { title: 'Ruby on Rails API', description: 'Legacy Rails application', dependencies_list: 'gem "rails", "5.2.6"\ngem "pg", "1.2.3"\ngem "devise", "4.7.3"\ngem "puma", "4.3.8"\ngem "rack", "2.2.3"', package_manager: 'bundler', project_type: 'api', status: 'pending' },
+    { title: 'PHP Laravel Backend', description: 'E-commerce backend', dependencies_list: '{\n  "laravel/framework": "8.0",\n  "guzzlehttp/guzzle": "7.2",\n  "stripe/stripe-php": "7.75"\n}', package_manager: 'composer', project_type: 'web-backend', status: 'completed', risk_score: 35, ai_analysis: 'Low risk: dependencies are relatively up to date.' },
+    { title: 'Rust CLI Tool', description: 'Internal CLI utility', dependencies_list: '[dependencies]\nclap = "3.0"\nserde = { version = "1.0", features = ["derive"] }\nreqwest = { version = "0.11", features = ["json"] }\ntokio = { version = "1", features = ["full"] }', package_manager: 'cargo', project_type: 'cli', status: 'pending' },
+    { title: 'Vue.js Dashboard', description: 'Admin dashboard frontend', dependencies_list: '{\n  "vue": "2.6.14",\n  "vuex": "3.6.2",\n  "vue-router": "3.5.3",\n  "chart.js": "2.9.4",\n  "bootstrap-vue": "2.21.2"\n}', package_manager: 'npm', project_type: 'web-frontend', status: 'completed', risk_score: 55, ai_analysis: 'Medium risk: Vue 2 approaching EOL, chart.js outdated.' },
+    { title: 'Android App Dependencies', description: 'Mobile Android app', dependencies_list: 'dependencies {\n  implementation "androidx.core:core-ktx:1.6.0"\n  implementation "com.squareup.retrofit2:retrofit:2.9.0"\n  implementation "com.google.code.gson:gson:2.8.8"\n}', package_manager: 'gradle', project_type: 'mobile', status: 'pending' },
+    { title: 'Angular Enterprise App', description: 'Large Angular application', dependencies_list: '{\n  "@angular/core": "11.2.0",\n  "@angular/common": "11.2.0",\n  "rxjs": "6.6.0",\n  "@ngrx/store": "11.0.0",\n  "lodash-es": "4.17.20"\n}', package_manager: 'npm', project_type: 'web-frontend', status: 'completed', risk_score: 50, ai_analysis: 'Medium risk: Angular 11 needs upgrade, lodash vulnerable version.' },
+    { title: 'Django REST API', description: 'Python API service', dependencies_list: 'Django==3.2\ndjango-rest-framework==3.12.4\ncelery==5.1.2\nredis==3.5.3\ngunicorn==20.1.0', package_manager: 'pip', project_type: 'api', status: 'pending' },
+    { title: 'Next.js SSR Application', description: 'Server-rendered React app', dependencies_list: '{\n  "next": "11.1.0",\n  "react": "17.0.2",\n  "swr": "1.0.0",\n  "tailwindcss": "2.2.0",\n  "prisma": "3.0.0"\n}', package_manager: 'npm', project_type: 'web-frontend', status: 'completed', risk_score: 30, ai_analysis: 'Low risk: dependencies are recent but not latest.' },
+    { title: 'NestJS Microservice', description: 'TypeScript backend service', dependencies_list: '{\n  "@nestjs/core": "8.0.0",\n  "@nestjs/common": "8.0.0",\n  "typeorm": "0.2.37",\n  "class-validator": "0.13.1",\n  "rxjs": "7.3.0"\n}', package_manager: 'npm', project_type: 'microservice', status: 'pending' },
+    { title: 'Electron Desktop App', description: 'Cross-platform desktop app', dependencies_list: '{\n  "electron": "13.0.0",\n  "electron-builder": "22.11.0",\n  "react": "17.0.2",\n  "sqlite3": "5.0.2"\n}', package_manager: 'npm', project_type: 'desktop', status: 'completed', risk_score: 65, ai_analysis: 'High risk: Electron 13 has multiple security vulnerabilities.' }
+  ];
+
+  for (const item of items) {
+    await query(
+      `INSERT INTO dependency_audits (title, description, dependencies_list, package_manager, project_type, status, risk_score, ai_analysis)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [item.title, item.description, item.dependencies_list, item.package_manager, item.project_type, item.status, item.risk_score || null, item.ai_analysis || null]
+    );
+  }
+  console.log('Seeded dependency_audits');
+};
+
+// Seed Deployment Advices
+const seedDeploymentAdvices = async () => {
+  const items = [
+    { title: 'Production API Deployment', description: 'First production deployment', current_setup: 'Node.js Express API\nPostgreSQL database\nRedis cache\nCurrently running on single EC2 instance', target_environment: 'aws', deployment_type: 'initial', status: 'completed', deployment_strategy: 'Blue-Green deployment with ALB' },
+    { title: 'Kubernetes Migration', description: 'Moving from VMs to K8s', current_setup: 'Docker containers on EC2\nManual scaling\nNginx load balancer', target_environment: 'kubernetes', deployment_type: 'migration', status: 'pending' },
+    { title: 'Serverless Function Deploy', description: 'Lambda function deployment', current_setup: 'Python script for data processing\nS3 triggers needed\nDynamoDB for storage', target_environment: 'aws', deployment_type: 'initial', status: 'completed', deployment_strategy: 'SAM/CloudFormation with canary deployment' },
+    { title: 'Frontend to Vercel', description: 'Static site deployment', current_setup: 'Next.js application\nCurrently on custom server\nNeeds preview deployments', target_environment: 'vercel', deployment_type: 'migration', status: 'pending' },
+    { title: 'Database Scaling Deployment', description: 'Add read replicas', current_setup: 'Single PostgreSQL instance\n500GB data\nHigh read traffic', target_environment: 'aws', deployment_type: 'scaling', status: 'completed', deployment_strategy: 'Add 2 read replicas with connection pooling' },
+    { title: 'Multi-region Deployment', description: 'Global availability', current_setup: 'Single region US-East\nGlobal user base\n99.9% SLA required', target_environment: 'aws', deployment_type: 'scaling', status: 'pending' },
+    { title: 'Rollback Production Release', description: 'Critical bug found', current_setup: 'Version 2.5.0 deployed\nPayment processing broken\nNeed immediate rollback to 2.4.9', target_environment: 'kubernetes', deployment_type: 'rollback', status: 'completed', deployment_strategy: 'Immediate kubectl rollout undo' },
+    { title: 'GCP App Engine Deploy', description: 'New microservice', current_setup: 'Go API service\nCloud SQL database\nNeed auto-scaling', target_environment: 'gcp', deployment_type: 'initial', status: 'pending' },
+    { title: 'Disaster Recovery Setup', description: 'DR environment creation', current_setup: 'Primary in US-East-1\nNo DR currently\nRPO: 1 hour, RTO: 4 hours', target_environment: 'aws', deployment_type: 'disaster-recovery', status: 'completed', deployment_strategy: 'Pilot light with automated failover' },
+    { title: 'Azure Kubernetes Deploy', description: 'AKS cluster setup', current_setup: 'ASP.NET Core API\nSQL Server database\nAzure AD authentication', target_environment: 'azure', deployment_type: 'migration', status: 'pending' },
+    { title: 'Heroku to AWS Migration', description: 'Cost optimization move', current_setup: 'Ruby on Rails app on Heroku\nHeroku Postgres\n$500/month currently', target_environment: 'aws', deployment_type: 'migration', status: 'completed', deployment_strategy: 'ECS Fargate with RDS PostgreSQL' },
+    { title: 'Edge Function Deployment', description: 'CDN edge functions', current_setup: 'API latency issues for global users\nNeed edge caching and transforms', target_environment: 'netlify', deployment_type: 'initial', status: 'pending' },
+    { title: 'Container Registry Setup', description: 'Private registry deployment', current_setup: 'Using Docker Hub free tier\nNeed private images\nScan for vulnerabilities', target_environment: 'aws', deployment_type: 'initial', status: 'completed', deployment_strategy: 'ECR with automated scanning' },
+    { title: 'Staging Environment Clone', description: 'New staging from prod', current_setup: 'Production running on K8s\nNeed identical staging\nSanitized data required', target_environment: 'kubernetes', deployment_type: 'initial', status: 'pending' },
+    { title: 'DigitalOcean App Platform', description: 'Simple app deployment', current_setup: 'Static React frontend\nNode.js backend\nManaged Postgres', target_environment: 'digitalocean', deployment_type: 'initial', status: 'completed', deployment_strategy: 'App Platform with automatic deploys' }
+  ];
+
+  for (const item of items) {
+    await query(
+      `INSERT INTO deployment_advices (title, description, current_setup, target_environment, deployment_type, status, deployment_strategy)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [item.title, item.description, item.current_setup, item.target_environment, item.deployment_type, item.status, item.deployment_strategy || null]
+    );
+  }
+  console.log('Seeded deployment_advices');
+};
+
+const seedUsers = async () => {
+  const demoPassword = await hashPassword('demo123456');
+  const users = [
+    { email: 'demo@example.com', name: 'Demo User', role: 'admin', email_verified: true },
+    { email: 'admin@example.com', name: 'Admin User', role: 'admin', email_verified: true },
+    { email: 'reviewer1@example.com', name: 'Alice Johnson', role: 'reviewer', email_verified: true },
+    { email: 'reviewer2@example.com', name: 'Bob Smith', role: 'reviewer', email_verified: true },
+    { email: 'reviewer3@example.com', name: 'Carol Williams', role: 'reviewer', email_verified: true },
+    { email: 'reviewer4@example.com', name: 'David Brown', role: 'reviewer', email_verified: true },
+    { email: 'reviewer5@example.com', name: 'Eve Davis', role: 'reviewer', email_verified: true },
+    { email: 'viewer1@example.com', name: 'Frank Miller', role: 'viewer', email_verified: true },
+    { email: 'viewer2@example.com', name: 'Grace Wilson', role: 'viewer', email_verified: true },
+    { email: 'viewer3@example.com', name: 'Henry Moore', role: 'viewer', email_verified: true },
+    { email: 'viewer4@example.com', name: 'Iris Taylor', role: 'viewer', email_verified: true },
+    { email: 'viewer5@example.com', name: 'Jack Anderson', role: 'viewer', email_verified: true },
+    { email: 'viewer6@example.com', name: 'Karen Thomas', role: 'viewer', email_verified: false },
+    { email: 'viewer7@example.com', name: 'Leo Jackson', role: 'viewer', email_verified: false },
+    { email: 'viewer8@example.com', name: 'Mia White', role: 'viewer', email_verified: true },
+  ];
+
+  for (const user of users) {
+    await query(
+      `INSERT INTO users (email, password_hash, name, role, email_verified)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [user.email, demoPassword, user.name, user.role, user.email_verified]
+    );
+  }
+  console.log('Seeded users');
+};
+
+const seedAuditLogs = async () => {
+  const actions = [
+    { user_email: 'demo@example.com', action: 'login', resource_type: 'auth', details: '{"method":"password"}' },
+    { user_email: 'admin@example.com', action: 'create', resource_type: 'code_reviews', resource_id: '1', details: '{"title":"User Authentication Module"}' },
+    { user_email: 'reviewer1@example.com', action: 'analyze', resource_type: 'code_reviews', resource_id: '1', details: '{"severity_score":6}' },
+    { user_email: 'demo@example.com', action: 'create', resource_type: 'teams', resource_id: '1', details: '{"name":"Frontend Team"}' },
+    { user_email: 'admin@example.com', action: 'update', resource_type: 'teams', resource_id: '1', details: '{"added_member":"reviewer1@example.com"}' },
+    { user_email: 'reviewer2@example.com', action: 'create', resource_type: 'documentation', resource_id: '1', details: '{"title":"User Service Documentation"}' },
+    { user_email: 'demo@example.com', action: 'export', resource_type: 'code_reviews', details: '{"format":"csv","count":15}' },
+    { user_email: 'reviewer3@example.com', action: 'create', resource_type: 'security_scans', resource_id: '1', details: '{"title":"XSS Vulnerability Check"}' },
+    { user_email: 'admin@example.com', action: 'bulk_delete', resource_type: 'code_reviews', details: '{"count":3}' },
+    { user_email: 'reviewer1@example.com', action: 'update', resource_type: 'review_assignments', resource_id: '1', details: '{"status":"completed"}' },
+    { user_email: 'demo@example.com', action: 'create', resource_type: 'webhooks', resource_id: '1', details: '{"events":["push","pull_request"]}' },
+    { user_email: 'reviewer4@example.com', action: 'analyze', resource_type: 'code_analysis', resource_id: '2', details: '{"complexity_score":4}' },
+    { user_email: 'admin@example.com', action: 'change_password', resource_type: 'auth', details: '{"success":true}' },
+    { user_email: 'demo@example.com', action: 'login', resource_type: 'auth', details: '{"method":"password","2fa":false}' },
+    { user_email: 'reviewer5@example.com', action: 'create', resource_type: 'test_generations', resource_id: '1', details: '{"title":"User Model Tests"}' },
+  ];
+
+  for (const log of actions) {
+    await query(
+      `INSERT INTO audit_logs (user_email, action, resource_type, resource_id, details, ip_address)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [log.user_email, log.action, log.resource_type, log.resource_id || null, log.details || null, '127.0.0.1']
+    );
+  }
+  console.log('Seeded audit_logs');
+};
+
+const seedApiKeys = async () => {
+  // Get user IDs for the first few users
+  const usersResult = await query('SELECT id, email FROM users ORDER BY id LIMIT 5');
+  const users = usersResult.rows;
+
+  const keys = [
+    { user: users[0], name: 'CI/CD Pipeline', expires_days: 365 },
+    { user: users[0], name: 'Local Development', expires_days: 90 },
+    { user: users[1], name: 'Admin API Access', expires_days: 180 },
+    { user: users[2], name: 'Review Automation', expires_days: 365 },
+    { user: users[3], name: 'Integration Tests', expires_days: 60 },
+  ];
+
+  for (const key of keys) {
+    const keyHash = await hashPassword(generateToken(16));
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + key.expires_days);
+    await query(
+      `INSERT INTO api_keys (user_id, key_hash, name, expires_at)
+       VALUES ($1, $2, $3, $4)`,
+      [key.user.id, keyHash, key.name, expiresAt.toISOString()]
+    );
+  }
+  console.log('Seeded api_keys');
+};
+
 const runSeed = async () => {
   try {
     console.log('Starting database seed...');
@@ -462,12 +728,16 @@ const runSeed = async () => {
 
     // Clear existing data (order matters due to foreign keys)
     const tables = [
+      'audit_logs', 'api_keys',
       'review_assignments', 'team_members', 'teams',
       'review_issues', 'review_metrics',
       'webhook_events', 'webhooks', 'pull_requests', 'github_integrations',
       'code_reviews', 'documentation', 'code_analysis', 'api_docs',
       'readme_projects', 'code_comments', 'security_scans',
-      'performance_reports', 'test_generations', 'refactoring_suggestions'
+      'performance_reports', 'test_generations', 'refactoring_suggestions',
+      'bug_predictions', 'code_explanations', 'tech_debt_items',
+      'architecture_reviews', 'dependency_audits', 'deployment_advices',
+      'users'
     ];
 
     for (const table of tables) {
@@ -478,6 +748,9 @@ const runSeed = async () => {
       }
     }
     console.log('Cleared existing data');
+
+    // Seed users first (other seed functions may reference them)
+    await seedUsers();
 
     // Seed all tables
     await seedCodeReviews();
@@ -497,6 +770,18 @@ const runSeed = async () => {
     await seedReviewAssignments();
     await seedReviewIssues();
     await seedReviewMetrics();
+
+    // Seed new AI feature tables
+    await seedBugPredictions();
+    await seedCodeExplanations();
+    await seedTechDebtItems();
+    await seedArchitectureReviews();
+    await seedDependencyAudits();
+    await seedDeploymentAdvices();
+
+    // Seed auth-related tables
+    await seedAuditLogs();
+    await seedApiKeys();
 
     console.log('Database seeding completed successfully!');
     process.exit(0);

@@ -7,8 +7,18 @@ const router = express.Router();
 // Get all API docs
 router.get('/', async (req, res) => {
   try {
-    const docs = await ApiDoc.findAll();
-    res.json(docs);
+    const { page, limit, search, sort, order, ...filters } = req.query;
+    delete filters._;
+    const result = await ApiDoc.findAllPaginated({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 20,
+      search: search || '',
+      searchFields: ['title', 'description', 'endpoint'],
+      sort: sort || 'created_at',
+      order: order || 'DESC',
+      filters
+    });
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

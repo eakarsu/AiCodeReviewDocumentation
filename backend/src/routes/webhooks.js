@@ -13,15 +13,18 @@ const router = express.Router();
 // Get all webhooks
 router.get('/', async (req, res) => {
   try {
-    const result = await query(`
-      SELECT w.id, w.integration_id, w.events, w.auto_review, w.status, w.last_triggered_at, w.created_at,
-             gi.username as github_username,
-             (SELECT COUNT(*) FROM webhook_events WHERE webhook_id = w.id) as event_count
-      FROM webhooks w
-      LEFT JOIN github_integrations gi ON w.integration_id = gi.id
-      ORDER BY w.created_at DESC
-    `);
-    res.json(result.rows);
+    const { page, limit, search, sort, order, ...filters } = req.query;
+    delete filters._;
+    const result = await Webhook.findAllPaginated({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 20,
+      search: search || '',
+      searchFields: ['secret_token'],
+      sort: sort || 'created_at',
+      order: order || 'DESC',
+      filters
+    });
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
