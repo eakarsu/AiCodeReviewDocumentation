@@ -1,8 +1,66 @@
 import express from 'express';
 import { CodeExplanation } from '../models/index.js';
-import { aiCodeExplainer } from '../services/openRouterService.js';
+import { aiCodeExplainer, callOpenRouter } from '../services/openRouterService.js';
+import { aiRateLimiter } from '../middleware/rateLimiter.js';
+import { validateCodeInput } from '../utils/inputValidation.js';
 
 const router = express.Router();
+
+// POST /api/explain — stateless code explanation at any level
+router.post('/explain', aiRateLimiter, async (req, res) => {
+  try {
+    const { code, language, level } = req.body;
+    const validation = validateCodeInput(code, language);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    const validLevels = ['beginner', 'intermediate', 'expert'];
+    const explanationLevel = (level && validLevels.includes(level.toLowerCase())) ? level.toLowerCase() : 'intermediate';
+
+    const systemPrompt = 'You are an expert software engineer and code quality specialist. Provide detailed, actionable analysis with specific line references and concrete improvement suggestions.';
+    const prompt = `Explain the following ${language} code at a ${explanationLevel} level.
+
+\`\`\`${language}
+${code}
+\`\`\`
+
+Target audience: ${explanationLevel === 'beginner' ? 'Someone new to programming with minimal coding experience' : explanationLevel === 'intermediate' ? 'A developer with 1-3 years experience familiar with basic concepts' : 'An experienced engineer comfortable with advanced patterns and system design'}
+
+Provide explanation tailored to the level. Respond with ONLY valid JSON:
+{
+  "level": "${explanationLevel}",
+  "overview": "What this code does in simple terms",
+  "line_by_line": [
+    { "lines": "1-5", "explanation": "..." }
+  ],
+  "key_concepts": [
+    { "concept": "...", "explanation": "...", "analogy": "Real-world analogy (especially for beginner level)" }
+  ],
+  "how_it_works": "Step-by-step walkthrough of execution flow",
+  "use_cases": ["When you would use this pattern/code"],
+  "common_pitfalls": ["Things to watch out for"],
+  "further_reading": ["Topics to learn next (beginner/intermediate) or advanced variations (expert)"],
+  "summary": "One-sentence summary"
+}`;
+
+    const result = await callOpenRouter(prompt, systemPrompt);
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(result.content);
+    } catch {
+      parsed = { raw_analysis: result.content };
+    }
+
+    res.json(parsed);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get all code explanations
 router.get('/', async (req, res) => {

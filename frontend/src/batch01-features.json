@@ -1,0 +1,104 @@
+{
+  "project": "AiCodeReviewDocumentation",
+  "marker": "// === Batch 01 Gaps & Frontend Mounts ===",
+  "features": [
+    {
+      "slug": "critical-ai-code-review-agent-analyzing-prs-for-bu",
+      "component": "CriticalAiCodeReviewAgentAnalyzingPrsForBuPage",
+      "label": "CRITICAL: AI code-review agent analyzing PRs for bugs, security, style, performance with inline comments",
+      "endpoint": "/api/cf-critical-ai-code-review-agent-analyzing-prs-for-bu",
+      "kind": "cfs"
+    },
+    {
+      "slug": "architecture-linter-enforcing-cross-repo-rules-and",
+      "component": "ArchitectureLinterEnforcingCrossRepoRulesAndPage",
+      "label": "Architecture linter enforcing cross-repo rules and detecting circular dependencies",
+      "endpoint": "/api/cf-architecture-linter-enforcing-cross-repo-rules-and",
+      "kind": "cfs"
+    },
+    {
+      "slug": "security-posture-scoring-aggregating-sast-dast-dep",
+      "component": "SecurityPostureScoringAggregatingSastDastDepPage",
+      "label": "Security posture scoring aggregating SAST/DAST/dependencies with trending metrics",
+      "endpoint": "/api/cf-security-posture-scoring-aggregating-sast-dast-dep",
+      "kind": "cfs"
+    },
+    {
+      "slug": "integrations-with-github-gitlab-bitbucket-sonarqub",
+      "component": "IntegrationsWithGithubGitlabBitbucketSonarqubPage",
+      "label": "Integrations with GitHub, GitLab, Bitbucket, SonarQube, and Checkmarx",
+      "endpoint": "/api/cf-integrations-with-github-gitlab-bitbucket-sonarqub",
+      "kind": "cfs"
+    },
+    {
+      "slug": "critical-0-mounted-chat-style-ai-endpoints-despite",
+      "component": "Critical0MountedChatStyleAiEndpointsDespitePage",
+      "label": "CRITICAL: 0 mounted /chat-style AI endpoints despite the entire domain being AI code review",
+      "endpoint": "/api/gap-critical-0-mounted-chat-style-ai-endpoints-despite",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-ai-pr-summary-or-change-impact-analyzer-wired-t",
+      "component": "NoAiPrSummaryOrChangeImpactAnalyzerWiredTPage",
+      "label": "No AI PR-summary or change-impact analyzer wired to /api/ai",
+      "endpoint": "/api/gap-no-ai-pr-summary-or-change-impact-analyzer-wired-t",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-ai-vulnerability-secret-scan-integrated-with-co",
+      "component": "NoAiVulnerabilitySecretScanIntegratedWithCoPage",
+      "label": "No AI vulnerability/secret-scan integrated with code understanding",
+      "endpoint": "/api/gap-no-ai-vulnerability-secret-scan-integrated-with-co",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-ai-documentation-generator-from-source",
+      "component": "NoAiDocumentationGeneratorFromSourcePage",
+      "label": "No AI documentation generator from source",
+      "endpoint": "/api/gap-no-ai-documentation-generator-from-source",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-ai-test-generation-actually-wired",
+      "component": "NoAiTestGenerationActuallyWiredPage",
+      "label": "No AI test-generation actually wired",
+      "endpoint": "/api/gap-no-ai-test-generation-actually-wired",
+      "kind": "gap"
+    },
+    {
+      "slug": "notification-routes-exist-but-no-slack-email-deliv",
+      "component": "NotificationRoutesExistButNoSlackEmailDelivPage",
+      "label": "Notification routes exist but no Slack/email delivery channel",
+      "endpoint": "/api/gap-notification-routes-exist-but-no-slack-email-deliv",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-ide-plugin-vs-code-jetbrains",
+      "component": "NoIdePluginVsCodeJetbrainsPage",
+      "label": "No IDE plugin (VS Code, JetBrains)",
+      "endpoint": "/api/gap-no-ide-plugin-vs-code-jetbrains",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-gitlab-bitbucket-integration-parity-only-github",
+      "component": "NoGitlabBitbucketIntegrationParityOnlyGithubPage",
+      "label": "No GitLab/Bitbucket integration parity (only GitHub)",
+      "endpoint": "/api/gap-no-gitlab-bitbucket-integration-parity-only-github",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-sbom-license-compliance-reporting-beyond-depend",
+      "component": "NoSbomLicenseComplianceReportingBeyondDependPage",
+      "label": "No SBOM / license-compliance reporting beyond dependency audit",
+      "endpoint": "/api/gap-no-sbom-license-compliance-reporting-beyond-depend",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-ci-cd-plugin-jenkins-circleci",
+      "component": "NoCiCdPluginJenkinsCircleciPage",
+      "label": "No CI/CD plugin (Jenkins, CircleCI)",
+      "endpoint": "/api/gap-no-ci-cd-plugin-jenkins-circleci",
+      "kind": "gap"
+    }
+  ]
+}

@@ -243,6 +243,16 @@ export const webhooksApi = {
   getEvents: (id) => api.get(`/webhooks/${id}/events`),
 };
 
+// Apply pass 5 — Notifications inbox (audit gap)
+export const notificationsApi = {
+  getAll: () => api.get('/notifications'),
+  getUnreadCount: () => api.get('/notifications/unread-count'),
+  create: (data) => api.post('/notifications', data),
+  markRead: (id) => api.put(`/notifications/${id}/read`),
+  markAllRead: () => api.post('/notifications/mark-all-read'),
+  delete: (id) => api.delete(`/notifications/${id}`),
+};
+
 // Metrics API
 export const metricsApi = {
   getDashboard: () => api.get('/metrics/dashboard'),

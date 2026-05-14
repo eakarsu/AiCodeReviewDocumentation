@@ -1,8 +1,66 @@
 import express from 'express';
 import { SecurityScan } from '../models/index.js';
-import { aiSecurityScan } from '../services/openRouterService.js';
+import { aiSecurityScan, callOpenRouter } from '../services/openRouterService.js';
+import { aiRateLimiter } from '../middleware/rateLimiter.js';
+import { validateCodeInput } from '../utils/inputValidation.js';
 
 const router = express.Router();
+
+// POST /api/security/scan — stateless OWASP Top 10 + CVE + secret detection scan
+router.post('/scan', aiRateLimiter, async (req, res) => {
+  try {
+    const { code, language } = req.body;
+    const validation = validateCodeInput(code, language);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    const systemPrompt = 'You are an expert software engineer and code quality specialist. Provide detailed, actionable analysis with specific line references and concrete improvement suggestions.';
+    const prompt = `Perform a comprehensive security scan on the following ${language} code.
+
+\`\`\`${language}
+${code}
+\`\`\`
+
+Analyze for:
+1. **OWASP Top 10 Vulnerabilities**: Check each OWASP category (Injection, Broken Auth, Sensitive Data Exposure, XXE, Broken Access Control, Security Misconfiguration, XSS, Insecure Deserialization, Vulnerable Components, Insufficient Logging)
+2. **CVE Patterns**: Known vulnerability patterns matching common CVEs
+3. **Secret Detection**: Hardcoded API keys, passwords, tokens, private keys, connection strings
+4. **Security Score** (0-100): Overall security posture
+
+Respond with ONLY valid JSON:
+{
+  "security_score": 75,
+  "owasp_findings": [
+    { "category": "A01:2021 - Broken Access Control", "severity": "high", "description": "...", "line_reference": "line 12", "remediation": "..." }
+  ],
+  "cve_patterns": [
+    { "pattern": "SQL Injection pattern", "cve_reference": "CWE-89", "severity": "critical", "location": "...", "remediation": "..." }
+  ],
+  "secrets_detected": [
+    { "type": "API Key", "location": "line 5", "severity": "critical", "remediation": "Move to environment variable" }
+  ],
+  "summary": "Brief overall security assessment",
+  "recommendations": ["Prioritized list of security improvements"]
+}`;
+
+    const result = await callOpenRouter(prompt, systemPrompt);
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(result.content);
+    } catch {
+      parsed = { raw_analysis: result.content };
+    }
+
+    res.json(parsed);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get all security scans
 router.get('/', async (req, res) => {

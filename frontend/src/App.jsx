@@ -23,6 +23,7 @@ import GitHubIntegration from './pages/GitHubIntegration';
 import Teams from './pages/Teams';
 import MyAssignments from './pages/MyAssignments';
 import Webhooks from './pages/Webhooks';
+import Notifications from './pages/Notifications';
 import Analytics from './pages/Analytics';
 import BugPrediction from './pages/BugPrediction';
 import CodeExplainer from './pages/CodeExplainer';
@@ -30,6 +31,14 @@ import TechDebt from './pages/TechDebt';
 import ArchitectureReview from './pages/ArchitectureReview';
 import DependencyAudit from './pages/DependencyAudit';
 import DeploymentAdvice from './pages/DeploymentAdvice';
+// NEW custom non-CRUD feature pages
+import Consensus from './pages/Consensus';
+import QualityTrends from './pages/QualityTrends';
+import Remediation from './pages/Remediation';
+import Standards from './pages/Standards';
+import CrossRepoDeps from './pages/CrossRepoDeps';
+import SLATracker from './pages/SLATracker';
+import SecurityPosture from './pages/SecurityPosture';
 
 const navSections = [
   {
@@ -81,12 +90,25 @@ const navSections = [
       { path: '/teams', label: 'Teams', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
       { path: '/assignments', label: 'Assignments', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01' },
       { path: '/webhooks', label: 'Webhooks', icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1' },
+      { path: '/notifications', label: 'Notifications', icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' },
     ],
   },
   {
     title: 'Insights',
     items: [
       { path: '/analytics', label: 'Analytics', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+      { path: '/quality-trends', label: 'Quality Trends', icon: 'M3 17l6-6 4 4 8-8M14 7h7v7' },
+      { path: '/security-posture', label: 'Security Posture', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
+    ],
+  },
+  {
+    title: 'NEW Features',
+    items: [
+      { path: '/consensus', label: 'Consensus Engine', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857' },
+      { path: '/remediation', label: 'Remediation Bot', icon: 'M11 4a7 7 0 014.95 11.95l4.55 4.55-1.5 1.5-4.55-4.55A7 7 0 1111 4z' },
+      { path: '/standards', label: 'Coding Standards', icon: 'M5 13l4 4L19 7' },
+      { path: '/cross-repo-deps', label: 'Cross-Repo Deps', icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101' },
+      { path: '/sla-tracker', label: 'Review SLA', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
     ],
   },
 ];
@@ -364,6 +386,7 @@ function App() {
               <Route path="/teams" element={<Teams />} />
               <Route path="/assignments" element={<MyAssignments />} />
               <Route path="/webhooks" element={<Webhooks />} />
+              <Route path="/notifications" element={<Notifications />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/bug-prediction" element={<BugPrediction />} />
               <Route path="/code-explainer" element={<CodeExplainer />} />
@@ -371,6 +394,13 @@ function App() {
               <Route path="/architecture-review" element={<ArchitectureReview />} />
               <Route path="/dependency-audit" element={<DependencyAudit />} />
               <Route path="/deployment-advice" element={<DeploymentAdvice />} />
+              <Route path="/consensus" element={<Consensus />} />
+              <Route path="/quality-trends" element={<QualityTrends />} />
+              <Route path="/remediation" element={<Remediation />} />
+              <Route path="/standards" element={<Standards />} />
+              <Route path="/cross-repo-deps" element={<CrossRepoDeps />} />
+              <Route path="/sla-tracker" element={<SLATracker />} />
+              <Route path="/security-posture" element={<SecurityPosture />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </ErrorBoundary>

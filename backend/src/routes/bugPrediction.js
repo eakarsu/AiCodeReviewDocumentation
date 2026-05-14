@@ -1,8 +1,71 @@
 import express from 'express';
 import { BugPrediction } from '../models/index.js';
-import { aiBugPrediction } from '../services/openRouterService.js';
+import { aiBugPrediction, callOpenRouter } from '../services/openRouterService.js';
+import { aiRateLimiter } from '../middleware/rateLimiter.js';
+import { validateCodeInput } from '../utils/inputValidation.js';
 
 const router = express.Router();
+
+// POST /api/bugs/predict — stateless bug prediction
+router.post('/predict', aiRateLimiter, async (req, res) => {
+  try {
+    const { code, language, git_history_summary } = req.body;
+    const validation = validateCodeInput(code, language);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    const systemPrompt = 'You are an expert software engineer and code quality specialist. Provide detailed, actionable analysis with specific line references and concrete improvement suggestions.';
+    const prompt = `Predict potential bugs in the following ${language} code.
+
+\`\`\`${language}
+${code}
+\`\`\`
+${git_history_summary ? `\nGit History Context:\n${git_history_summary}\n` : ''}
+Analyze:
+1. **Bug Likelihood Score** (0-100): Overall probability of bugs
+2. **Risk Areas**: Specific code sections most likely to contain bugs
+3. **Common Failure Patterns**: Known antipatterns that lead to bugs
+
+Respond with ONLY valid JSON:
+{
+  "bug_likelihood_score": 72,
+  "risk_level": "high|medium|low",
+  "risk_areas": [
+    {
+      "location": "functionName (line 10-25)",
+      "risk_type": "null pointer dereference|race condition|off-by-one|...",
+      "severity": "critical|high|medium|low",
+      "description": "...",
+      "reproduction_scenario": "...",
+      "fix_suggestion": "..."
+    }
+  ],
+  "failure_patterns": [
+    { "pattern": "...", "likelihood": "high|medium|low", "description": "...", "mitigation": "..." }
+  ],
+  "git_insights": "${git_history_summary ? 'Insights based on git history' : 'No git history provided'}",
+  "recommended_tests": ["Specific tests to catch these bugs"],
+  "summary": "Overall bug risk assessment"
+}`;
+
+    const result = await callOpenRouter(prompt, systemPrompt);
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(result.content);
+    } catch {
+      parsed = { raw_analysis: result.content };
+    }
+
+    res.json(parsed);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get all bug predictions
 router.get('/', async (req, res) => {

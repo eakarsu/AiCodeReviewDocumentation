@@ -1,8 +1,79 @@
 import express from 'express';
 import { TechDebtItem } from '../models/index.js';
-import { aiTechDebtAnalysis } from '../services/openRouterService.js';
+import { aiTechDebtAnalysis, callOpenRouter } from '../services/openRouterService.js';
+import { aiRateLimiter } from '../middleware/rateLimiter.js';
+import { validateCodeInput } from '../utils/inputValidation.js';
 
 const router = express.Router();
+
+// POST /api/tech-debt/analyze — stateless tech debt analysis
+router.post('/analyze', aiRateLimiter, async (req, res) => {
+  try {
+    const { code, codebase_size_kloc } = req.body;
+    // language is optional for tech debt, default to 'javascript'
+    const language = req.body.language || 'javascript';
+    const validation = validateCodeInput(code, language);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    const systemPrompt = 'You are an expert software engineer and code quality specialist. Provide detailed, actionable analysis with specific line references and concrete improvement suggestions.';
+    const prompt = `Analyze the following ${language} code for technical debt.
+
+\`\`\`${language}
+${code}
+\`\`\`
+${codebase_size_kloc ? `\nCodebase size: approximately ${codebase_size_kloc}K lines of code` : ''}
+
+Analyze and provide:
+1. **Debt Score** (0-100): Overall technical debt level
+2. **Interest Rate**: Time cost — how much extra work this debt causes per sprint/month
+3. **Payoff Priority List**: Ordered list of what to fix first
+
+Respond with ONLY valid JSON:
+{
+  "debt_score": 68,
+  "debt_level": "high|medium|low",
+  "interest_rate": {
+    "hours_per_sprint": 4,
+    "description": "This debt costs approximately X hours per sprint in extra debugging and workarounds"
+  },
+  "debt_items": [
+    {
+      "category": "Code Debt|Design Debt|Documentation Debt|Test Debt|Infrastructure Debt",
+      "title": "...",
+      "location": "line/function reference",
+      "severity": "critical|high|medium|low",
+      "estimated_fix_hours": 2,
+      "impact": "...",
+      "description": "..."
+    }
+  ],
+  "payoff_priority": [
+    { "rank": 1, "item": "debt item title", "rationale": "Fix this first because...", "roi": "High — saves X hours/month" }
+  ],
+  "quick_wins": ["Easy fixes with high impact"],
+  "long_term_strategy": "How to prevent future debt accumulation",
+  "summary": "Overall tech debt assessment"
+}`;
+
+    const result = await callOpenRouter(prompt, systemPrompt);
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(result.content);
+    } catch {
+      parsed = { raw_analysis: result.content };
+    }
+
+    res.json(parsed);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get all tech debt items
 router.get('/', async (req, res) => {

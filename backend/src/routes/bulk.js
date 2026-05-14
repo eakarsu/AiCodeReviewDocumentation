@@ -1,5 +1,8 @@
 import express from 'express';
 import { query } from '../config/database.js';
+import { aiCodeReviewStructured, callOpenRouter } from '../services/openRouterService.js';
+import { aiRateLimiter } from '../middleware/rateLimiter.js';
+import { validateCodeInput } from '../utils/inputValidation.js';
 
 const router = express.Router();
 
@@ -11,6 +14,87 @@ const VALID_TABLES = [
   'dependency_audits', 'deployment_advices', 'teams', 'review_assignments',
   'webhooks'
 ];
+
+// POST /api/bulk/reviews — bulk AI code review: accepts array of snippets, runs in parallel
+router.post('/reviews', aiRateLimiter, async (req, res) => {
+  try {
+    const { snippets } = req.body;
+
+    if (!Array.isArray(snippets) || snippets.length === 0) {
+      return res.status(400).json({ error: 'snippets must be a non-empty array' });
+    }
+
+    if (snippets.length > 10) {
+      return res.status(400).json({ error: 'Maximum 10 snippets per bulk request' });
+    }
+
+    // Validate all snippets first
+    for (let i = 0; i < snippets.length; i++) {
+      const { code, language } = snippets[i];
+      const validation = validateCodeInput(code, language);
+      if (!validation.valid) {
+        return res.status(400).json({ error: `snippets[${i}]: ${validation.error}` });
+      }
+    }
+
+    const systemPrompt = 'You are an expert software engineer and code quality specialist. Provide detailed, actionable analysis with specific line references and concrete improvement suggestions.';
+
+    // Run all reviews in parallel
+    const results = await Promise.allSettled(
+      snippets.map(async ({ code, language, label }, index) => {
+        const prompt = `Review the following ${language} code${label ? ` (${label})` : ''}:
+
+\`\`\`${language}
+${code}
+\`\`\`
+
+Respond with ONLY valid JSON:
+{
+  "overall_rating": 7,
+  "summary": "Brief code summary",
+  "issues": [
+    { "severity": "critical|high|medium|low|info", "category": "bug|security|performance|style|maintainability", "title": "...", "description": "...", "line_reference": "line X", "suggestion": "..." }
+  ],
+  "positives": ["..."],
+  "recommendations": ["..."]
+}`;
+
+        const aiResult = await callOpenRouter(prompt, systemPrompt);
+        if (!aiResult.success) {
+          return { index, label: label || `snippet_${index}`, status: 'error', error: aiResult.error };
+        }
+
+        let review;
+        try {
+          review = JSON.parse(aiResult.content);
+        } catch {
+          review = { raw_review: aiResult.content };
+        }
+
+        return { index, label: label || `snippet_${index}`, language, status: 'success', review };
+      })
+    );
+
+    const reviews = results.map((result, index) => {
+      if (result.status === 'fulfilled') {
+        return result.value;
+      }
+      return { index, status: 'error', error: result.reason?.message || 'Unknown error' };
+    });
+
+    const succeeded = reviews.filter(r => r.status === 'success').length;
+    const failed = reviews.filter(r => r.status === 'error').length;
+
+    res.json({
+      total: snippets.length,
+      succeeded,
+      failed,
+      reviews
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Bulk delete
 router.post('/delete', async (req, res) => {

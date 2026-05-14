@@ -1,8 +1,80 @@
 import express from 'express';
 import { DependencyAudit } from '../models/index.js';
-import { aiDependencyAudit } from '../services/openRouterService.js';
+import { aiDependencyAudit, callOpenRouter } from '../services/openRouterService.js';
+import { aiRateLimiter } from '../middleware/rateLimiter.js';
+import { validatePackageJson } from '../utils/inputValidation.js';
 
 const router = express.Router();
+
+// POST /api/dependencies/audit — stateless dependency audit
+router.post('/audit', aiRateLimiter, async (req, res) => {
+  try {
+    const { package_json_content } = req.body;
+    const validation = validatePackageJson(package_json_content);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    let parsedPkg;
+    try {
+      parsedPkg = JSON.parse(package_json_content);
+    } catch {
+      return res.status(400).json({ error: 'Invalid JSON in package_json_content' });
+    }
+
+    const systemPrompt = 'You are an expert software engineer and code quality specialist. Provide detailed, actionable analysis with specific line references and concrete improvement suggestions.';
+    const prompt = `Audit the following package.json dependencies for security, outdatedness, and license risks.
+
+\`\`\`json
+${package_json_content}
+\`\`\`
+
+Analyze:
+1. **Outdated Packages**: Packages that have newer versions available
+2. **Known CVEs**: Security vulnerabilities in listed package versions
+3. **License Risks**: GPL contamination, proprietary conflicts, missing licenses
+4. **Upgrade Priority**: Which packages to update first
+
+Respond with ONLY valid JSON:
+{
+  "overall_risk_score": 45,
+  "package_manager": "npm",
+  "total_dependencies": ${Object.keys({ ...(parsedPkg.dependencies || {}), ...(parsedPkg.devDependencies || {}) }).length},
+  "outdated_packages": [
+    { "name": "express", "current_version": "4.17.1", "latest_version": "4.18.2", "severity": "medium", "breaking_changes": false, "upgrade_notes": "..." }
+  ],
+  "cve_findings": [
+    { "package": "lodash", "version": "4.17.15", "cve_id": "CVE-2021-23337", "severity": "critical", "description": "...", "fix_version": "4.17.21" }
+  ],
+  "license_risks": [
+    { "package": "...", "license": "GPL-3.0", "risk": "Copyleft contamination", "recommendation": "..." }
+  ],
+  "upgrade_priority": [
+    { "rank": 1, "package": "...", "reason": "Critical CVE", "action": "Update to X.Y.Z immediately" }
+  ],
+  "recommended_alternatives": [
+    { "package": "...", "alternative": "...", "reason": "..." }
+  ],
+  "summary": "Overall dependency health assessment"
+}`;
+
+    const result = await callOpenRouter(prompt, systemPrompt);
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(result.content);
+    } catch {
+      parsed = { raw_analysis: result.content };
+    }
+
+    res.json(parsed);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get all dependency audits
 router.get('/', async (req, res) => {

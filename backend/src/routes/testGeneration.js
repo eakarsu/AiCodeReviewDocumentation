@@ -1,8 +1,73 @@
 import express from 'express';
 import { TestGeneration } from '../models/index.js';
-import { aiGenerateTests } from '../services/openRouterService.js';
+import { aiGenerateTests, callOpenRouter } from '../services/openRouterService.js';
+import { aiRateLimiter } from '../middleware/rateLimiter.js';
+import { validateCodeInput, ALLOWED_LANGUAGES } from '../utils/inputValidation.js';
 
 const router = express.Router();
+
+// POST /api/tests/generate — stateless test suite generation
+router.post('/generate', aiRateLimiter, async (req, res) => {
+  try {
+    const { code, language, framework } = req.body;
+    const validation = validateCodeInput(code, language);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    const systemPrompt = 'You are an expert software engineer and code quality specialist. Provide detailed, actionable analysis with specific line references and concrete improvement suggestions.';
+    const prompt = `Generate a complete test suite for the following ${language} code${framework ? ` using ${framework}` : ''}.
+
+\`\`\`${language}
+${code}
+\`\`\`
+
+Generate:
+1. **Unit Tests**: For every function/method
+2. **Edge Cases**: Boundary conditions, empty inputs, null/undefined handling
+3. **Mock Objects**: Where external dependencies need to be mocked
+4. **Assertions**: Specific expected values and behaviors
+
+Respond with ONLY valid JSON:
+{
+  "framework": "${framework || 'jest'}",
+  "estimated_coverage": "85%",
+  "test_file": "Complete ready-to-run test file as a string",
+  "test_cases": [
+    {
+      "name": "should return correct result for valid input",
+      "type": "unit|integration|edge_case",
+      "function_under_test": "functionName",
+      "description": "...",
+      "setup": "mock/setup code",
+      "test_code": "actual test code",
+      "expected_behavior": "..."
+    }
+  ],
+  "mocks": [
+    { "dependency": "...", "mock_code": "...", "reason": "..." }
+  ],
+  "setup_instructions": "How to run these tests",
+  "summary": "Overview of test coverage"
+}`;
+
+    const result = await callOpenRouter(prompt, systemPrompt);
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(result.content);
+    } catch {
+      parsed = { raw_analysis: result.content };
+    }
+
+    res.json(parsed);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get all test generations
 router.get('/', async (req, res) => {
