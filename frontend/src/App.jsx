@@ -39,6 +39,7 @@ import Standards from './pages/Standards';
 import CrossRepoDeps from './pages/CrossRepoDeps';
 import SLATracker from './pages/SLATracker';
 import SecurityPosture from './pages/SecurityPosture';
+import CustomViewsPage from './pages/CustomViewsPage';
 
 const navSections = [
   {
@@ -109,6 +110,12 @@ const navSections = [
       { path: '/standards', label: 'Coding Standards', icon: 'M5 13l4 4L19 7' },
       { path: '/cross-repo-deps', label: 'Cross-Repo Deps', icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101' },
       { path: '/sla-tracker', label: 'Review SLA', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
+    ],
+  },
+  {
+    title: 'Custom Views',
+    items: [
+      { path: '/custom-views', label: 'Review Views', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
     ],
   },
 ];
@@ -401,6 +408,7 @@ function App() {
               <Route path="/cross-repo-deps" element={<CrossRepoDeps />} />
               <Route path="/sla-tracker" element={<SLATracker />} />
               <Route path="/security-posture" element={<SecurityPosture />} />
+              <Route path="/custom-views" element={<CustomViewsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </ErrorBoundary>

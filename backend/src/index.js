@@ -52,6 +52,7 @@ import _route_aiCodeReviewer from './routes/aiCodeReviewer.js';
 import _route_architectureLinter from './routes/architectureLinter.js';
 import _route_securityPostureScore from './routes/securityPostureScore.js';
 import _route_scmIntegrationsExt from './routes/scmIntegrationsExt.js';
+import customViewsRouter from './routes/customViews.js';
 const app = express();
 const PORT = process.env.PORT || 5001;
 
@@ -143,6 +144,9 @@ app.use('/api/security-posture', securityPostureRouter);
 // Apply pass 5 — Notifications inbox (audit gap)
 app.use('/api/notifications', notificationsRouter);
 
+// Custom Views — 4 features (diff viewer, review timeline, report pdf, auto-tag rules)
+app.use('/api/custom-views', customViewsRouter);
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.message);
@@ -177,13 +181,20 @@ app.listen(PORT, () => {
 
 
 // === Batch 01 Gaps & Frontend Mounts ===
-app.use('/api/gap-critical-0-mounted-chat-style-ai-endpoints-despite', require('./routes/gap_critical_0_mounted_chat_style_ai_endpoints_despite'));
-app.use('/api/gap-no-ai-pr-summary-or-change-impact-analyzer-wired-t', require('./routes/gap_no_ai_pr_summary_or_change_impact_analyzer_wired_t'));
-app.use('/api/gap-no-ai-vulnerability-secret-scan-integrated-with-co', require('./routes/gap_no_ai_vulnerability_secret_scan_integrated_with_co'));
-app.use('/api/gap-no-ai-documentation-generator-from-source', require('./routes/gap_no_ai_documentation_generator_from_source'));
-app.use('/api/gap-no-ai-test-generation-actually-wired', require('./routes/gap_no_ai_test_generation_actually_wired'));
-app.use('/api/gap-notification-routes-exist-but-no-slack-email-deliv', require('./routes/gap_notification_routes_exist_but_no_slack_email_deliv'));
-app.use('/api/gap-no-ide-plugin-vs-code-jetbrains', require('./routes/gap_no_ide_plugin_vs_code_jetbrains'));
-app.use('/api/gap-no-gitlab-bitbucket-integration-parity-only-github', require('./routes/gap_no_gitlab_bitbucket_integration_parity_only_github'));
-app.use('/api/gap-no-sbom-license-compliance-reporting-beyond-depend', require('./routes/gap_no_sbom_license_compliance_reporting_beyond_depend'));
-app.use('/api/gap-no-ci-cd-plugin-jenkins-circleci', require('./routes/gap_no_ci_cd_plugin_jenkins_circleci'));
+// Use createRequire so legacy CommonJS gap_* routes can be loaded from this ESM file.
+import { createRequire } from 'module';
+const _gapRequire = createRequire(import.meta.url);
+try {
+  app.use('/api/gap-critical-0-mounted-chat-style-ai-endpoints-despite', _gapRequire('./routes/gap_critical_0_mounted_chat_style_ai_endpoints_despite'));
+  app.use('/api/gap-no-ai-pr-summary-or-change-impact-analyzer-wired-t', _gapRequire('./routes/gap_no_ai_pr_summary_or_change_impact_analyzer_wired_t'));
+  app.use('/api/gap-no-ai-vulnerability-secret-scan-integrated-with-co', _gapRequire('./routes/gap_no_ai_vulnerability_secret_scan_integrated_with_co'));
+  app.use('/api/gap-no-ai-documentation-generator-from-source', _gapRequire('./routes/gap_no_ai_documentation_generator_from_source'));
+  app.use('/api/gap-no-ai-test-generation-actually-wired', _gapRequire('./routes/gap_no_ai_test_generation_actually_wired'));
+  app.use('/api/gap-notification-routes-exist-but-no-slack-email-deliv', _gapRequire('./routes/gap_notification_routes_exist_but_no_slack_email_deliv'));
+  app.use('/api/gap-no-ide-plugin-vs-code-jetbrains', _gapRequire('./routes/gap_no_ide_plugin_vs_code_jetbrains'));
+  app.use('/api/gap-no-gitlab-bitbucket-integration-parity-only-github', _gapRequire('./routes/gap_no_gitlab_bitbucket_integration_parity_only_github'));
+  app.use('/api/gap-no-sbom-license-compliance-reporting-beyond-depend', _gapRequire('./routes/gap_no_sbom_license_compliance_reporting_beyond_depend'));
+  app.use('/api/gap-no-ci-cd-plugin-jenkins-circleci', _gapRequire('./routes/gap_no_ci_cd_plugin_jenkins_circleci'));
+} catch (e) {
+  console.warn('Gap routes load skipped:', e.message);
+}
