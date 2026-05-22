@@ -40,6 +40,10 @@ import CrossRepoDeps from './pages/CrossRepoDeps';
 import SLATracker from './pages/SLATracker';
 import SecurityPosture from './pages/SecurityPosture';
 import CustomViewsPage from './pages/CustomViewsPage';
+import ApiBreakingChange from './pages/ApiBreakingChange';
+
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
 
 const navSections = [
   {
@@ -116,6 +120,7 @@ const navSections = [
     title: 'Custom Views',
     items: [
       { path: '/custom-views', label: 'Review Views', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
+      { path: '/api-breaking-change', label: 'API Breaking Changes', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
     ],
   },
 ];
@@ -149,6 +154,9 @@ function App() {
     return (
       <ErrorBoundary>
         <Routes>
+        <Route path="/codex/custom-viz" element={<CodexCustomVizFeature />} />
+        <Route path="/codex/operations" element={<CodexOperationsFeature />} />
+
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -409,6 +417,7 @@ function App() {
               <Route path="/sla-tracker" element={<SLATracker />} />
               <Route path="/security-posture" element={<SecurityPosture />} />
               <Route path="/custom-views" element={<CustomViewsPage />} />
+              <Route path="/api-breaking-change" element={<ApiBreakingChange />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </ErrorBoundary>

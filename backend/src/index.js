@@ -53,6 +53,7 @@ import _route_architectureLinter from './routes/architectureLinter.js';
 import _route_securityPostureScore from './routes/securityPostureScore.js';
 import _route_scmIntegrationsExt from './routes/scmIntegrationsExt.js';
 import customViewsRouter from './routes/customViews.js';
+import apiBreakingChangeRouter from './routes/apiBreakingChange.js';
 const app = express();
 const PORT = process.env.PORT || 5001;
 
@@ -146,6 +147,7 @@ app.use('/api/notifications', notificationsRouter);
 
 // Custom Views — 4 features (diff viewer, review timeline, report pdf, auto-tag rules)
 app.use('/api/custom-views', customViewsRouter);
+app.use('/api/api-breaking-change', apiBreakingChangeRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
