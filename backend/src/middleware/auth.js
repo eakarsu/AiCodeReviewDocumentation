@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must be at least 32 characters');
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
 export const generateJWT = (payload) => {
@@ -20,6 +21,7 @@ export const authMiddleware = (req, res, next) => {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = verifyJWT(token);
+    if (!decoded.tenantId || !decoded.id || !decoded.role) return res.status(403).json({ error: 'Token lacks tenant identity' });
     req.user = decoded;
     next();
   } catch (err) {

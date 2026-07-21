@@ -1,0 +1,7 @@
+# Authoritative code-knowledge runbook
+
+Install from lockfiles, copy `.env.example` to `.env`, replace every example credential and encryption key, and run `npm run migrate` in `backend/`. Start with `./start.sh backend`; startup only checks readiness and fails if `knowledge_sources` is missing. The launcher derives a loopback-only CORS origin from `FRONTEND_PORT` when none is supplied. `DOCUMENT_ENCRYPTION_KEY` remains mandatory outside `NODE_ENV=test`; a fixed development-only 32-byte key is supplied only to an otherwise unconfigured disposable test runtime.
+
+Use `/api/authoritative/knowledge`. Source versions bind repository, commit, path, checksum, parser version, and document permissions. Every query rechecks tenant and document access. Citation IDs are resolved against indexed, unexpired chunks in the tenant rather than trusted from the request. Server-owned quality thresholds gate citation resolution, faithfulness, retrieval recall, freshness, conflict disclosure, and injection resistance; otherwise the service abstains.
+
+Configure SCM, object storage, vector index, and CI adapters separately. Monitor ingestion lag, checksum conflicts, permission denials, abstention rate, evaluation regressions, deletion propagation, retries, and dead letters. Deletion retires the source and queues object/vector deletion; confirm both receipts before declaring erasure complete. Legacy/generated/chat-style endpoints are quarantined.

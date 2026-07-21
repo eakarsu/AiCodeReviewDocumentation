@@ -4,6 +4,7 @@ import { hashPassword, verifyPassword, generateToken } from '../utils/crypto.js'
 import { generateSecret, verifyTOTP, getTOTPUri } from '../utils/totp.js';
 import { generateJWT, authMiddleware } from '../middleware/auth.js';
 import { query } from '../config/database.js';
+import crypto from 'crypto';
 
 const router = express.Router();
 
@@ -14,8 +15,8 @@ router.post('/register', async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (password.length < 12) {
+      return res.status(400).json({ error: 'Password must be at least 12 characters' });
     }
 
     const existing = await User.findOne({ email });
@@ -30,13 +31,14 @@ router.post('/register', async (req, res) => {
       password_hash,
       name: name || email.split('@')[0],
       role: 'viewer',
+      tenant_id: crypto.randomUUID(),
       email_verification_token
     });
 
-    const token = generateJWT({ id: user.id, email: user.email, role: user.role, name: user.name });
+    const token = generateJWT({ id: user.id, email: user.email, role: user.role, name: user.name, tenantId: user.tenant_id, groups: [] });
     res.status(201).json({
       token,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role }
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenant_id }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -55,6 +57,7 @@ router.post('/login', async (req, res) => {
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+    if (!user.tenant_id) return res.status(403).json({ error: 'Account has not been assigned to a tenant' });
 
     // Check if account is locked
     if (user.locked_until && new Date(user.locked_until) > new Date()) {
@@ -90,10 +93,10 @@ router.post('/login', async (req, res) => {
       last_login_at: new Date().toISOString()
     });
 
-    const token = generateJWT({ id: user.id, email: user.email, role: user.role, name: user.name });
+    const token = generateJWT({ id: user.id, email: user.email, role: user.role, name: user.name, tenantId: user.tenant_id, groups: user.groups || [] });
     res.json({
       token,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role, avatar_url: user.avatar_url, two_factor_enabled: user.two_factor_enabled }
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenant_id, avatar_url: user.avatar_url, two_factor_enabled: user.two_factor_enabled }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -105,6 +108,7 @@ router.get('/me', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.tenant_id !== req.user.tenantId) return res.status(403).json({ error: 'Tenant identity mismatch' });
     res.json({
       id: user.id, email: user.email, name: user.name, role: user.role,
       avatar_url: user.avatar_url, two_factor_enabled: user.two_factor_enabled,
@@ -122,8 +126,8 @@ router.post('/change-password', authMiddleware, async (req, res) => {
     if (!current_password || !new_password) {
       return res.status(400).json({ error: 'Current and new password are required' });
     }
-    if (new_password.length < 6) {
-      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    if (new_password.length < 12) {
+      return res.status(400).json({ error: 'New password must be at least 12 characters' });
     }
 
     const user = await User.findById(req.user.id);

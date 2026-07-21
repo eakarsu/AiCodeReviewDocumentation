@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'fs';const read=p=>fs.readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
+test('startup uses readiness check instead of runtime DDL',()=>{const s=read('src/index.js');assert.match(s,/to_regclass/);assert.doesNotMatch(s,/initDatabase|CREATE TABLE|seed/);});
+test('knowledge schema owns permissions deletion queue and audit',()=>{const s=read('migrations/001_authoritative_knowledge.sql');for(const term of ['permissions','deletion_requested_at','dead_letter','payload_hash','append-only'])assert.match(s,new RegExp(term));});
+test('answer citations resolve from durable chunks, not request evidence',()=>{const s=read('src/routes/authoritative.js');assert.match(s,/JOIN knowledge_sources/);assert.doesNotMatch(s,/evaluateAnswer\([^\n]*req\.body\.evidence/);});

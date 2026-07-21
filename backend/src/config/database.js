@@ -8,22 +8,8 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 const { Pool } = pg;
 
-// Configure pool - works with local PostgreSQL (no password needed on macOS)
-const poolConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'ai_code_review',
-};
-
-// Only add user/password if provided (local PostgreSQL on macOS uses peer auth)
-if (process.env.DB_USER) {
-  poolConfig.user = process.env.DB_USER;
-}
-if (process.env.DB_PASSWORD) {
-  poolConfig.password = process.env.DB_PASSWORD;
-}
-
-const pool = new Pool(poolConfig);
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required');
+export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 pool.on('connect', () => {
   console.log('Connected to PostgreSQL database');

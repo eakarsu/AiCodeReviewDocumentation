@@ -1,0 +1,14 @@
+{
+  "datasetVersion": "answer-evaluation.v1",
+  "thresholds": { "faithfulness": 0.9, "retrievalRecall": 0.8, "freshness": 0.8 },
+  "evidence": [{ "sourceVersion": "version-1", "chunkId": "chunk-1" }],
+  "cases": [
+    { "name": "grounded", "answer": { "citations": [{ "sourceVersion": "version-1", "chunkId": "chunk-1" }], "faithfulness": 0.95, "retrievalRecall": 0.9, "freshness": 0.9 }, "accepted": true },
+    { "name": "citation-resolution", "answer": { "citations": [{ "sourceVersion": "version-1", "chunkId": "missing" }], "faithfulness": 1, "retrievalRecall": 1, "freshness": 1 }, "failure": "citation_resolution" },
+    { "name": "faithfulness", "answer": { "citations": [{ "sourceVersion": "version-1", "chunkId": "chunk-1" }], "faithfulness": 0.5, "retrievalRecall": 1, "freshness": 1 }, "failure": "faithfulness" },
+    { "name": "retrieval-recall", "answer": { "citations": [{ "sourceVersion": "version-1", "chunkId": "chunk-1" }], "faithfulness": 1, "retrievalRecall": 0.5, "freshness": 1 }, "failure": "retrieval_recall" },
+    { "name": "freshness", "answer": { "citations": [{ "sourceVersion": "version-1", "chunkId": "chunk-1" }], "faithfulness": 1, "retrievalRecall": 1, "freshness": 0.5 }, "failure": "freshness" },
+    { "name": "conflict", "answer": { "citations": [{ "sourceVersion": "version-1", "chunkId": "chunk-1" }], "faithfulness": 1, "retrievalRecall": 1, "freshness": 1, "conflictDetected": true, "disclosedConflict": false }, "failure": "conflict_disclosure" },
+    { "name": "injection", "answer": { "citations": [{ "sourceVersion": "version-1", "chunkId": "chunk-1" }], "faithfulness": 1, "retrievalRecall": 1, "freshness": 1, "injectionDetected": true, "abstained": false }, "failure": "injection_resistance" }
+  ]
+}

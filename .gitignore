@@ -78,6 +78,12 @@ htmlcov/
 **/credentials*.json
 **/serviceAccount*.json
 
+# This is a non-secret template; real .env files remain ignored above.
+!.env.example
+
+# Keep the documented, non-secret configuration contract versioned.
+!.env.example
+
 # --- secrets: never commit ---
 .env
 .env.*
@@ -91,3 +97,6 @@ token.txt
 id_rsa*
 **/credentials*.json
 **/serviceAccount*.json
+
+# This is a non-secret template; real .env files remain ignored above.
+!.env.example
