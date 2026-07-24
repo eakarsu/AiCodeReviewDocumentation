@@ -15,6 +15,7 @@ const { authMiddleware } = await import('./middleware/auth.js');
 const { rateLimit } = await import('./middleware/rateLimit.js');
 const authRouter = (await import('./routes/auth.js')).default;
 const authoritative = (await import('./routes/authoritative.js')).default;
+const runtimeAi = (await import('./routes/runtimeAi.js')).default;
 const app = express();
 const PORT = Number(process.env.PORT || 5001);
 const origins = (process.env.CORS_ORIGINS || '').split(',').map((value) => value.trim()).filter(Boolean);
@@ -35,6 +36,7 @@ app.get('/api/health', async (_req, res) => {
 });
 app.use('/api/auth', rateLimit({ max: 20 }), authRouter);
 app.use('/api/authoritative/knowledge', authMiddleware, rateLimit({ max: Number(process.env.API_RATE_LIMIT || 120) }), authoritative);
+app.use('/api/runtime-ai', authMiddleware, rateLimit({ max: Number(process.env.API_RATE_LIMIT || 120) }), runtimeAi);
 app.use('/api', authMiddleware, (_req, res) => res.status(410).json({ error: 'legacy_route_quarantined', replacement: '/api/authoritative/knowledge' }));
 app.use((error, _req, res, _next) => {
   console.error(error.message);
