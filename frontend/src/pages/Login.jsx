@@ -14,8 +14,8 @@ function Login() {
   const navigate = useNavigate();
 
   const handleAutoFill = () => {
-    setEmail('demo@example.com');
-    setPassword('demo123456');
+    setEmail(import.meta.env.VITE_DEMO_EMAIL || '');
+    setPassword(import.meta.env.VITE_DEMO_PASSWORD || '');
     setError('');
   };
 
