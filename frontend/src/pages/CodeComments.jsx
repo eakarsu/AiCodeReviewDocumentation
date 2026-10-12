@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import DataTable from '../components/DataTable';
 import DetailModal from '../components/DetailModal';
 import NewItemForm from '../components/NewItemForm';
+import AIResultDisplay from '../components/AIResultDisplay';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
 import ExportButtons from '../components/ExportButtons';
@@ -401,11 +402,7 @@ function CodeComments() {
             </div>
             <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Original Code</h4><pre className="text-sm overflow-x-auto">{selectedItem.code_snippet}</pre></div>
             {selectedItem.generated_comments && (
-              <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Generated Comments</h4>
-                <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
-                  <pre className="whitespace-pre-wrap text-sm text-indigo-800 dark:text-indigo-200 !bg-transparent !p-0">{selectedItem.generated_comments}</pre>
-                </div>
-              </div>
+              <AIResultDisplay content={selectedItem.generated_comments} title="Generated Comments" />
             )}
           </div>
         )}

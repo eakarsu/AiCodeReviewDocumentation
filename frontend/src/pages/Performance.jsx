@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import DataTable from '../components/DataTable';
 import DetailModal from '../components/DetailModal';
 import NewItemForm from '../components/NewItemForm';
+import AIResultDisplay from '../components/AIResultDisplay';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
 import ExportButtons from '../components/ExportButtons';
@@ -360,19 +361,14 @@ function Performance() {
               {selectedItem.performance_score && <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Performance Score</h4><span className="text-3xl font-bold text-yellow-600">{selectedItem.performance_score}%</span></div>}
             </div>
             <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Code Snippet</h4><pre className="text-sm overflow-x-auto">{selectedItem.code_snippet}</pre></div>
-            {selectedItem.bottlenecks && (
-              <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Bottlenecks Identified</h4>
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                  <pre className="whitespace-pre-wrap text-sm text-red-800 dark:text-red-200 !bg-transparent !p-0">{selectedItem.bottlenecks}</pre>
-                </div>
-              </div>
-            )}
-            {selectedItem.optimization_suggestions && (
-              <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Optimization Suggestions</h4>
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                  <pre className="whitespace-pre-wrap text-sm text-yellow-800 dark:text-yellow-200 !bg-transparent !p-0">{selectedItem.optimization_suggestions}</pre>
-                </div>
-              </div>
+            {(selectedItem.bottlenecks || selectedItem.optimization_suggestions) && (
+              <AIResultDisplay
+                content={{
+                  bottlenecks: selectedItem.bottlenecks,
+                  optimization_suggestions: selectedItem.optimization_suggestions,
+                }}
+                title="Performance Analysis"
+              />
             )}
           </div>
         )}

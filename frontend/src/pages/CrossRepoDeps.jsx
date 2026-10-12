@@ -1,3 +1,4 @@
+import FormattedAIReport from "../components/FormattedAIReport";
 import { useState, useEffect } from 'react';
 
 const API = '/api';
@@ -109,7 +110,7 @@ export default function CrossRepoDeps() {
       {aiResult && (
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700/50">
           <h3 className="font-bold mb-2">AI Suggestion</h3>
-          <pre className="text-xs font-mono overflow-x-auto p-4 bg-gray-100 dark:bg-gray-900 rounded">{JSON.stringify(aiResult, null, 2)}</pre>
+          <FormattedAIReport response={aiResult} />
         </div>
       )}
     </div>

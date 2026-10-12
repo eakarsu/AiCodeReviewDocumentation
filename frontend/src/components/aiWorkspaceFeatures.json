@@ -1,0 +1,100 @@
+[
+  {
+    "name": "ArchitectureLinterEnforcingCrossRepoRulesAndPage",
+    "id": "cf-architecture-linter-enforcing-cross-repo-rules-and",
+    "title": "Architecture linter enforcing cross-repo rules and detecting circular dependencies",
+    "description": "Prepare a professional advisory report for architecture linter enforcing cross-repo rules and detecting circular dependencies using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "Critical0MountedChatStyleAiEndpointsDespitePage",
+    "id": "gap-critical-0-mounted-chat-style-ai-endpoints-despite",
+    "title": "CRITICAL: 0 mounted /chat-style AI endpoints despite the entire domain being AI code review",
+    "description": "Prepare a professional advisory report for critical: 0 mounted /chat-style ai endpoints despite the entire domain being ai code review using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "CriticalAiCodeReviewAgentAnalyzingPrsForBuPage",
+    "id": "cf-critical-ai-code-review-agent-analyzing-prs-for-bu",
+    "title": "CRITICAL: AI code-review agent analyzing PRs for bugs, security, style, performance with inline comments",
+    "description": "Prepare a professional advisory report for critical: ai code-review agent analyzing prs for bugs, security, style, performance with inline comments using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "IntegrationsWithGithubGitlabBitbucketSonarqubPage",
+    "id": "cf-integrations-with-github-gitlab-bitbucket-sonarqub",
+    "title": "Integrations with GitHub, GitLab, Bitbucket, SonarQube, and Checkmarx",
+    "description": "Prepare a professional advisory report for integrations with github, gitlab, bitbucket, sonarqube, and checkmarx using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "NoAiDocumentationGeneratorFromSourcePage",
+    "id": "gap-no-ai-documentation-generator-from-source",
+    "title": "No AI documentation generator from source",
+    "description": "Prepare a professional advisory report for no ai documentation generator from source using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "NoAiPrSummaryOrChangeImpactAnalyzerWiredTPage",
+    "id": "gap-no-ai-pr-summary-or-change-impact-analyzer-wired-t",
+    "title": "No AI PR-summary or change-impact analyzer wired to /api/ai",
+    "description": "Prepare a professional advisory report for no ai pr-summary or change-impact analyzer wired to /api/ai using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "NoAiTestGenerationActuallyWiredPage",
+    "id": "gap-no-ai-test-generation-actually-wired",
+    "title": "No AI test-generation actually wired",
+    "description": "Prepare a professional advisory report for no ai test-generation actually wired using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "NoAiVulnerabilitySecretScanIntegratedWithCoPage",
+    "id": "gap-no-ai-vulnerability-secret-scan-integrated-with-co",
+    "title": "No AI vulnerability/secret-scan integrated with code understanding",
+    "description": "Prepare a professional advisory report for no ai vulnerability/secret-scan integrated with code understanding using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "NoCiCdPluginJenkinsCircleciPage",
+    "id": "gap-no-ci-cd-plugin-jenkins-circleci",
+    "title": "No CI/CD plugin (Jenkins, CircleCI)",
+    "description": "Prepare a professional advisory report for no ci/cd plugin (jenkins, circleci) using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "NoGitlabBitbucketIntegrationParityOnlyGithubPage",
+    "id": "gap-no-gitlab-bitbucket-integration-parity-only-github",
+    "title": "No GitLab/Bitbucket integration parity (only GitHub)",
+    "description": "Prepare a professional advisory report for no gitlab/bitbucket integration parity (only github) using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "NoIdePluginVsCodeJetbrainsPage",
+    "id": "gap-no-ide-plugin-vs-code-jetbrains",
+    "title": "No IDE plugin (VS Code, JetBrains)",
+    "description": "Prepare a professional advisory report for no ide plugin (vs code, jetbrains) using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "NoSbomLicenseComplianceReportingBeyondDependPage",
+    "id": "gap-no-sbom-license-compliance-reporting-beyond-depend",
+    "title": "No SBOM / license-compliance reporting beyond dependency audit",
+    "description": "Prepare a professional advisory report for no sbom / license-compliance reporting beyond dependency audit using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "NotificationRoutesExistButNoSlackEmailDelivPage",
+    "id": "gap-notification-routes-exist-but-no-slack-email-deliv",
+    "title": "Notification routes exist but no Slack/email delivery channel",
+    "description": "Prepare a professional advisory report for notification routes exist but no slack/email delivery channel using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "SecurityPostureScoringAggregatingSastDastDepPage",
+    "id": "cf-security-posture-scoring-aggregating-sast-dast-dep",
+    "title": "Security posture scoring aggregating SAST/DAST/dependencies with trending metrics",
+    "description": "Prepare a professional advisory report for security posture scoring aggregating sast/dast/dependencies with trending metrics using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  }
+]

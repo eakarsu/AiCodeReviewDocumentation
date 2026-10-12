@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import DataTable from '../components/DataTable';
 import DetailModal from '../components/DetailModal';
 import NewItemForm from '../components/NewItemForm';
+import AIResultDisplay from '../components/AIResultDisplay';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
 import ExportButtons from '../components/ExportButtons';
@@ -85,6 +86,58 @@ const sampleDataSets = [
       description: 'Review authentication middleware for security issues',
       code_snippet: `const jwt = require('jsonwebtoken');\n\nfunction authMiddleware(req, res, next) {\n  const token = req.headers.authorization;\n  if (!token) return res.status(401).json({ error: 'No token' });\n  try {\n    req.user = jwt.verify(token, process.env.JWT_SECRET);\n    next();\n  } catch (err) {\n    return res.status(403).json({ error: 'Invalid token' });\n  }\n}`,
       language: 'javascript',
+    },
+  },
+  {
+    label: 'Python Access Control',
+    data: {
+      title: 'Role-Based Access Decorator',
+      description: 'Review authorization checks, error handling, and auditability for protected endpoints',
+      code_snippet: `from functools import wraps
+from flask import request, jsonify
+
+
+def require_roles(*allowed_roles):
+    def decorator(handler):
+        @wraps(handler)
+        def wrapped(*args, **kwargs):
+            actor = getattr(request, 'user', None)
+            if actor is None:
+                return jsonify({'error': 'Authentication required'}), 401
+            if actor.role not in allowed_roles:
+                return jsonify({'error': 'Insufficient permissions'}), 403
+            return handler(*args, **kwargs)
+        return wrapped
+    return decorator`,
+      language: 'python',
+    },
+  },
+  {
+    label: 'SQL Transfer Transaction',
+    data: {
+      title: 'Account Transfer Transaction',
+      description: 'Review transaction boundaries, concurrency controls, and validation in a balance transfer',
+      code_snippet: `BEGIN;
+
+SELECT balance
+FROM accounts
+WHERE id = :source_account_id
+FOR UPDATE;
+
+UPDATE accounts
+SET balance = balance - :amount
+WHERE id = :source_account_id
+  AND balance >= :amount;
+
+UPDATE accounts
+SET balance = balance + :amount
+WHERE id = :destination_account_id;
+
+INSERT INTO transfers (source_account_id, destination_account_id, amount, created_at)
+VALUES (:source_account_id, :destination_account_id, :amount, CURRENT_TIMESTAMP);
+
+COMMIT;`,
+      language: 'sql',
     },
   },
 ];
@@ -353,12 +406,7 @@ function CodeReviews() {
               </div>
             )}
             {selectedItem.review_result && !showIssues && (
-              <div>
-                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">AI Review Result</h4>
-                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                  <pre className="whitespace-pre-wrap text-sm text-green-800 dark:text-green-200 font-mono !bg-transparent !p-0">{selectedItem.review_result}</pre>
-                </div>
-              </div>
+              <AIResultDisplay content={selectedItem.review_result} title="AI Review Result" />
             )}
           </div>
         )}

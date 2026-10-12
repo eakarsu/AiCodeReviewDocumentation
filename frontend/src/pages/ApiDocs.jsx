@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import DataTable from '../components/DataTable';
 import DetailModal from '../components/DetailModal';
 import NewItemForm from '../components/NewItemForm';
+import AIResultDisplay from '../components/AIResultDisplay';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
 import ExportButtons from '../components/ExportButtons';
@@ -302,11 +303,7 @@ function ApiDocs() {
             {selectedItem.request_body && <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Request Body</h4><pre className="text-sm overflow-x-auto">{selectedItem.request_body}</pre></div>}
             {selectedItem.response_body && <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Response Body</h4><pre className="text-sm overflow-x-auto">{selectedItem.response_body}</pre></div>}
             {selectedItem.generated_docs && (
-              <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Generated Documentation</h4>
-                <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
-                  <pre className="whitespace-pre-wrap text-sm text-orange-800 dark:text-orange-200 !bg-transparent !p-0">{selectedItem.generated_docs}</pre>
-                </div>
-              </div>
+              <AIResultDisplay content={selectedItem.generated_docs} title="Generated Documentation" />
             )}
           </div>
         )}

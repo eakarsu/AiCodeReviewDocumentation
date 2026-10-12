@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 
 function Login() {
+  const demoLoginLock = useRef(false);
+  const [demoLoginBusy, setDemoLoginBusy] = useState(false);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [totpCode, setTotpCode] = useState('');
@@ -13,23 +16,17 @@ function Login() {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  const handleAutoFill = () => {
-    setEmail(import.meta.env.VITE_DEMO_EMAIL || '');
-    setPassword(import.meta.env.VITE_DEMO_PASSWORD || '');
-    setError('');
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, demoLoginCredentials) => {
     e.preventDefault();
     setError('');
 
-    if (!email || !password) {
+    if (!(demoLoginCredentials?.email ?? email) || !(demoLoginCredentials?.password ?? password)) {
       setError('Please enter email and password');
       return;
     }
 
     try {
-      const result = await login(email, password, needs2FA ? totpCode : undefined);
+      const result = await login((demoLoginCredentials?.email ?? email), (demoLoginCredentials?.password ?? password), needs2FA ? totpCode : undefined);
       if (result.requires_2fa) {
         setNeeds2FA(true);
         return;
@@ -38,6 +35,28 @@ function Login() {
       navigate('/');
     } catch (err) {
       setError(err.message);
+    }
+  };
+
+  const handleDemoLogin = async (event) => {
+    if (demoLoginLock.current) return;
+    const demoEmail = import.meta.env.VITE_DEMO_EMAIL || '';
+    const demoPassword = import.meta.env.VITE_DEMO_PASSWORD || '';
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    setError('');
+    if (!demoEmail || !demoPassword) {
+      setError('Demo credentials are unavailable in this environment.');
+      return;
+    }
+
+    demoLoginLock.current = true;
+    setDemoLoginBusy(true);
+    try {
+      await handleSubmit(event, { email: demoEmail, password: demoPassword });
+    } finally {
+      demoLoginLock.current = false;
+      setDemoLoginBusy(false);
     }
   };
 
@@ -143,20 +162,21 @@ function Login() {
             </div>
           </div>
 
-          {/* Auto-fill Demo Button */}
+          {/* Demo Login Button */}
           <button
             type="button"
-            onClick={handleAutoFill}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+            disabled={demoLoginBusy || loading}
+            onClick={handleDemoLogin}
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            Auto Fill Demo Credentials
+            Log In as Demo
           </button>
 
           <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
-            Click the button above to auto-fill demo credentials
+            Uses the configured local demo account for this environment
           </p>
         </div>
 

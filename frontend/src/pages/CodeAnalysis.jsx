@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import DataTable from '../components/DataTable';
 import DetailModal from '../components/DetailModal';
 import NewItemForm from '../components/NewItemForm';
+import AIResultDisplay from '../components/AIResultDisplay';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
 import ExportButtons from '../components/ExportButtons';
@@ -356,11 +357,7 @@ function CodeAnalysis() {
             </div>
             <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Code Snippet</h4><pre className="text-sm overflow-x-auto">{selectedItem.code_snippet}</pre></div>
             {selectedItem.analysis_result && (
-              <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Analysis Result</h4>
-                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
-                  <pre className="whitespace-pre-wrap text-sm text-purple-800 dark:text-purple-200 !bg-transparent !p-0">{selectedItem.analysis_result}</pre>
-                </div>
-              </div>
+              <AIResultDisplay content={selectedItem.analysis_result} title="Analysis Result" />
             )}
           </div>
         )}

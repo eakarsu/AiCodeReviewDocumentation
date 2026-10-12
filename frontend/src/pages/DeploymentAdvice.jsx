@@ -127,7 +127,24 @@ Constraints:
 - Maximum acceptable downtime: 0 seconds`,
       target_environment: 'aws',
       deployment_type: 'update',
-      infrastructure_config: '',
+      infrastructure_config: `# ECS blue/green deployment controls
+service:
+  name: payments-api
+  desiredCount: 6
+  deploymentController: CODE_DEPLOY
+loadBalancer:
+  productionListener: 443
+  testListener: 8443
+deployment:
+  strategy: blue-green
+  terminationWaitMinutes: 30
+  alarms:
+    - payment_error_rate
+    - p95_latency
+    - unhealthy_host_count
+migration:
+  mode: expand-contract
+  backwardCompatible: true`,
     },
   },
   {

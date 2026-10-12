@@ -1,3 +1,4 @@
+import AIReportLibrary from "./components/AIReportLibrary";
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
@@ -295,7 +296,7 @@ function App() {
         }`}
       >
         <SidebarContent />
-      </aside>
+      <AIReportLibrary /></aside>
 
       {/* Sidebar - Mobile */}
       <aside

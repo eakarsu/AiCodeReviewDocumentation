@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import DataTable from '../components/DataTable';
 import DetailModal from '../components/DetailModal';
 import NewItemForm from '../components/NewItemForm';
+import AIResultDisplay from '../components/AIResultDisplay';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
 import ExportButtons from '../components/ExportButtons';
@@ -311,11 +312,7 @@ function ReadmeGenerator() {
             <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Tech Stack</h4><p className="text-gray-900 dark:text-white">{selectedItem.tech_stack}</p></div>
             <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Project Structure</h4><pre className="text-sm overflow-x-auto">{selectedItem.project_structure}</pre></div>
             {selectedItem.generated_readme && (
-              <div><h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Generated README</h4>
-                <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-lg p-4">
-                  <pre className="whitespace-pre-wrap text-sm text-teal-800 dark:text-teal-200 !bg-transparent !p-0">{selectedItem.generated_readme}</pre>
-                </div>
-              </div>
+              <AIResultDisplay content={selectedItem.generated_readme} title="Generated README" />
             )}
           </div>
         )}
